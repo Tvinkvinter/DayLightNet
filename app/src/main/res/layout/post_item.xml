@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/post_card"
+        android:layout_width="match_parent"
+        tools:layout_marginHorizontal="20dp"
+        app:cardElevation="4dp"
+        app:strokeWidth="0dp"
+        tools:layout_marginVertical="20dp"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/author_avatar_img"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/round_outline"
+                android:clipToOutline="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/default_user_avatar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/author_name_tv"
+                style="@style/BaseText.Header.Header2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:maxLines="1"
+                app:layout_constraintBottom_toTopOf="@id/timestamp_tv"
+                app:layout_constraintStart_toEndOf="@id/author_avatar_img"
+                app:layout_constraintTop_toTopOf="@id/author_avatar_img"
+                app:layout_constraintVertical_chainStyle="packed"
+                tools:text="Artem Tarusov" />
+
+            <TextView
+                android:id="@+id/timestamp_tv"
+                style="@style/BaseText.LightText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                app:layout_constraintBottom_toBottomOf="@id/author_avatar_img"
+                app:layout_constraintStart_toStartOf="@id/author_name_tv"
+                app:layout_constraintTop_toBottomOf="@id/author_name_tv"
+                tools:text="21.08.2024 14:05" />
+
+            <TextView
+                android:id="@+id/content_tv"
+                style="@style/BaseText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/like_btn"
+                app:layout_constraintTop_toBottomOf="@id/author_avatar_img"
+                tools:text="Something very intresting"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/like_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="20dp"
+                android:layout_marginBottom="16dp"
+                app:icon="@drawable/ic_sun"
+                app:iconPadding="0dp"
+                app:iconSize="20dp"
+                android:padding="12dp"
+                app:iconGravity="start"
+                tools:text="12"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+
+</merge>

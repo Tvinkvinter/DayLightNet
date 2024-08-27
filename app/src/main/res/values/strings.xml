@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">DayLightNet</string>
+
+    <!-- Bottom navigation view -->
+    <string name="tab_title_home">Home</string>
+    <string name="tab_title_chat">Chat</string>
+    <string name="tab_title_profile">Profile</string>
+
+    <!-- Login screen -->
+    <string name="login_title">Log In</string>
+    <string name="login_hint_email">Email</string>
+    <string name="login_hint_password">Password</string>
+    <string name="login_button_log_in">Log In</string>
+    <string name="login_button_google">Continue with Google</string>
+    <string name="login_sign_up_caption">Don\'t have an account yet?</string>
+    <string name="login_sign_up_link">Sign Up</string>
+    <string name="login_sign_in_snackbar_error">Wrong email or password</string>
+
+    <!-- Register screen -->
+    <string name="register_title">Sign Up</string>
+    <string name="register_hint_first_name">First name</string>
+    <string name="register_hint_last_name">Last name</string>
+    <string name="register_hint_email">Email</string>
+    <string name="register_hint_password">Password</string>
+    <string name="register_hint_repeat_password">Repeat password</string>
+    <string name="register_button_sign_up">Sign Up</string>
+
+    <!-- TextInputField errors -->
+    <string name="tif_email_error">Invalid email</string>
+    <string name="tif_password_error">Password needs to be at least 6 characters</string>
+    <string name="tif_repeat_password_error">Passwords don\'t match</string>
+    <string name="tif_first_name_error">First name should not be empty</string>
+    <string name="tif_last_name_error">Last name should not be empty</string>
+
+    <!-- Profile screen -->
+    <string name="profile_username">%s %s</string>
+    <string name="profile_menu_item_settings">Settings</string>
+    <string name="profile_menu_item_change_password">Change Password</string>
+    <string name="profile_menu_item_log_out">Log Out</string>
+    <string name="profile_default_additional_info">Just a good person</string>
+
+</resources>

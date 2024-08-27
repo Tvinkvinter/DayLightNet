@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.atarusov.daylightnet.fragments.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_bottomNavFragments"
+            app:destination="@id/bottomNavFragments" />
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment2"
+            app:destination="@id/registerFragment" />
+    </fragment>
+    <navigation android:id="@+id/bottomNavFragments"
+        app:startDestination="@id/homeFragment">
+        <fragment
+            android:id="@+id/profileFragment"
+            android:name="com.atarusov.daylightnet.fragments.ProfileFragment"
+            android:label="fragment_profile"
+            tools:layout="@layout/fragment_profile" />
+        <fragment
+            android:id="@+id/homeFragment"
+            android:name="com.atarusov.daylightnet.fragments.HomeFragment"
+            android:label="fragment_home"
+            tools:layout="@layout/fragment_home" />
+        <fragment
+            android:id="@+id/chatFragment"
+            android:name="com.atarusov.daylightnet.fragments.ChatFragment"
+            android:label="fragment_chat"
+            tools:layout="@layout/fragment_chat" />
+        <action
+            android:id="@+id/action_global_loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:destination="@id/loginFragment" />
+    </navigation>
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.atarusov.daylightnet.fragments.RegisterFragment"
+        android:label="RegisterFragment"
+        tools:layout="@layout/fragment_register">
+        <action
+            android:id="@+id/action_registerFragment_to_bottomNavFragments2"
+            app:destination="@id/bottomNavFragments" />
+    </fragment>
+</navigation>

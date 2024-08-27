@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.ProfileFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/top_guideline_icons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="24dp" />
+
+    <ImageView
+        android:id="@+id/arrow_back_ic"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="20dp"
+        android:src="@drawable/ic_arrow_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/top_guideline_icons" />
+
+    <ImageView
+        android:id="@+id/edit_ic"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/ic_edit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/top_guideline_icons" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/top_barrier_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="arrow_back_ic, edit_ic" />
+
+    <ImageView
+        android:id="@+id/avatar_img"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/round_outline"
+        android:clipToOutline="true"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_user_avatar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_barrier_content" />
+
+    <TextView
+        android:id="@+id/user_name_tv"
+        style="@style/BaseText.Header.Header1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="20dp"
+        android:gravity="start"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/avatar_img"
+        app:layout_constraintTop_toTopOf="@id/avatar_img"
+
+        tools:text="Emma Phillips" />
+
+    <TextView
+        android:id="@+id/user_additional_info_tv"
+        style="@style/BaseText.LightText"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="20dp"
+        android:text="@string/profile_default_additional_info"
+        app:layout_constraintBottom_toBottomOf="@id/avatar_img"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/user_name_tv"
+        app:layout_constraintTop_toBottomOf="@id/user_name_tv"
+        tools:text="Fashion model. Los Angeles, CA" />
+
+    <LinearLayout
+        android:id="@+id/menu_items_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="32dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/avatar_img">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/menu_item_settings_btn"
+            style="@style/MenuItemButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_menu_item_settings"
+            app:icon="@drawable/ic_settings" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/change_password_settings_btn"
+            style="@style/MenuItemButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_menu_item_change_password"
+            app:icon="@drawable/ic_change_password" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_log_out"
+            style="@style/MenuItemButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_menu_item_log_out"
+            android:textColor="@color/error"
+            app:icon="@drawable/ic_logout"
+            app:iconTint="@color/error" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
