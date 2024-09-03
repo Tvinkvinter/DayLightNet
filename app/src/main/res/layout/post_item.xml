@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    tools:parentTag="android.widget.LinearLayout">
+    android:layout_height="wrap_content"
+    tools:context=".MainActivity">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/post_card"
         android:layout_width="match_parent"
-        tools:layout_marginHorizontal="20dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="12dp"
         app:cardElevation="4dp"
-        app:strokeWidth="0dp"
-        tools:layout_marginVertical="20dp"
-        android:layout_height="wrap_content">
+        app:strokeWidth="0dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -22,8 +21,8 @@
 
             <ImageView
                 android:id="@+id/author_avatar_img"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/round_outline"
@@ -35,7 +34,7 @@
 
             <TextView
                 android:id="@+id/author_name_tv"
-                style="@style/BaseText.Header.Header2"
+                style="@style/BaseText.Header.Header3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -62,34 +61,36 @@
                 style="@style/BaseText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
-                app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginHorizontal="20dp"
-                android:layout_marginBottom="16dp"
                 android:layout_marginTop="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="16dp"
+                android:maxLines="1"
                 app:layout_constraintBottom_toTopOf="@id/like_btn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/author_avatar_img"
-                tools:text="Something very intresting"
-                />
+                tools:text="Something very intresting" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/like_btn"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:gravity="start|center_vertical"
+                android:minWidth="20dp"
+                android:padding="4dp"
+                android:textSize="12sp"
+                app:cornerRadius="24dp"
+                app:icon="@drawable/ic_sun"
+                app:iconPadding="10dp"
+                app:iconSize="18dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="20dp"
-                android:layout_marginBottom="16dp"
-                app:icon="@drawable/ic_sun"
-                app:iconPadding="0dp"
-                app:iconSize="20dp"
-                android:padding="12dp"
-                app:iconGravity="start"
-                tools:text="12"/>
+                tools:text="12" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 
 
-</merge>
+</LinearLayout>

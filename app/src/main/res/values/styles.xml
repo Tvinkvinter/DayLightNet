@@ -20,10 +20,13 @@
         <item name="android:textSize">24sp</item>
     </style>
 
-    <style name="BaseText.LightText">
+    <style name="BaseText.Header.Header3">
         <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="BaseText.LightText">
+        <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/on_background_light</item>
-        android:textSize="16sp"
     </style>
 
     <style name="BaseText.MenuItem">
