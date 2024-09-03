@@ -1,12 +1,14 @@
 package com.atarusov.daylightnet.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.atarusov.App
+import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.User
-import com.atarusov.daylightnet.viewmodels.LoginViewModel.NavigationEvent
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,9 +24,9 @@ data class RegisterValidationState(
     val isRepeatPasswordValid: Boolean = true
 )
 
-class RegisterViewModel : ViewModel() {
-    private val firebaseAuth = FirebaseAuth.getInstance()
-    private val database = Firebase.firestore
+class RegisterViewModel(
+    val usersRepository: UsersRepository
+) : ViewModel() {
 
     sealed class NavigationEvent {
         object NavigateToBottomNavigationScreens : NavigationEvent()
@@ -51,29 +53,14 @@ class RegisterViewModel : ViewModel() {
             ),
         )
 
-        if (allDataValid())
-            firebaseAuth.createUserWithEmailAndPassword(
-                registrationData.email,
-                registrationData.password
-            )
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        navigateToBottomNavigationScreens()
-                        val userUid = firebaseAuth.uid
-                        if (userUid != null) {
-                            val newUser =
-                                User(userUid, registrationData.firstName, registrationData.lastName)
-                            addUserToDB(newUser)
-                        }
-                    }
-                }
+        if (isAllDataValid())
+            viewModelScope.launch {
+                usersRepository.registerUser(registrationData)
+                navigateToBottomNavigationScreens()
+            }
     }
 
-    private fun addUserToDB(user: User) {
-        database.collection("users").document(user.uid).set(user)
-    }
-
-    private fun allDataValid(): Boolean {
+    private fun isAllDataValid(): Boolean {
         return _validationStateFlow.value.isFirstNameValid &&
                 _validationStateFlow.value.isLastNameValid &&
                 _validationStateFlow.value.isEmailValid &&
@@ -140,6 +127,17 @@ class RegisterViewModel : ViewModel() {
     fun navigateBack() {
         viewModelScope.launch {
             _navigationEvent.emit(NavigationEvent.NavigateBack)
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val usersRepository = (this[APPLICATION_KEY] as App).usersRepository
+                RegisterViewModel(
+                    usersRepository = usersRepository
+                )
+            }
         }
     }
 }

@@ -10,18 +10,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.databinding.FragmentProfileBinding
+import com.atarusov.daylightnet.model.User
 import com.atarusov.daylightnet.viewmodels.ProfileViewModel
-import com.atarusov.daylightnet.viewmodels.RegisterViewModel
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
     lateinit var binding: FragmentProfileBinding
-    private val viewModel: ProfileViewModel by viewModels()
-    lateinit var auth: FirebaseAuth
+    private val viewModel: ProfileViewModel by viewModels { ProfileViewModel.Factory }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,10 +25,15 @@ class ProfileFragment : Fragment() {
     ): View {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
 
-        auth = Firebase.auth
 
         binding.btnLogOut.setOnClickListener {
             viewModel.signOut()
+        }
+
+        lifecycleScope.launch {
+            viewModel.currentUserData.collect { userData ->
+                userData?.let { setViewsByCurrentUserData(it) }
+            }
         }
 
         lifecycleScope.launch {
@@ -47,24 +48,16 @@ class ProfileFragment : Fragment() {
             }
         }
 
-        lifecycleScope.launch {
-            viewModel.currentUserData.collect { currentUser ->
-                if (currentUser != null) {
-                    binding.userNameTv.text = getString(
-                        R.string.profile_username,
-                        currentUser.firstName,
-                        currentUser.lastName
-                    )
-                    if (currentUser.additionalInfo != null)
-                        binding.userAdditionalInfoTv.text = currentUser.additionalInfo
-                }
-            }
-        }
-
         return binding.root
     }
 
-    companion object {
-        fun newInstance() = HomeFragment()
+    fun setViewsByCurrentUserData(user: User) {
+        with(binding) {
+            binding.userNameTv.text =
+                getString(R.string.profile_username, user.firstName, user.lastName)
+
+            if (user.additionalInfo != null)
+                binding.userAdditionalInfoTv.text = user.additionalInfo
+        }
     }
 }

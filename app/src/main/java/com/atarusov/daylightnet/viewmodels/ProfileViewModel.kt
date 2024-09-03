@@ -1,51 +1,49 @@
 package com.atarusov.daylightnet.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.atarusov.App
+import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.User
-import com.atarusov.daylightnet.viewmodels.LoginViewModel.NavigationEvent
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ProfileViewModel : ViewModel() {
-    private val firebaseAuth = FirebaseAuth.getInstance()
-    private val database = Firebase.firestore
+class ProfileViewModel(
+    private val usersRepository: UsersRepository
+) : ViewModel() {
 
     sealed class NavigationEvent {
         object NavigateToLoginScreen : NavigationEvent()
         object NavigateBack : NavigationEvent()
     }
 
-    private val _navigationEvent =
-        MutableSharedFlow<NavigationEvent>()
-    val navigationEvent = _navigationEvent.asSharedFlow()
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent
 
     private val _currentUserData = MutableStateFlow<User?>(null)
-    val currentUserData: StateFlow<User?> = _currentUserData.asStateFlow()
+    val currentUserData = _currentUserData.asStateFlow()
+
 
     init {
-        fetchCurrentUserData()
-    }
-
-    fun fetchCurrentUserData() {
-        val currentUserUid = firebaseAuth.uid
-        if (currentUserUid != null) {
-            database.collection("users").document(currentUserUid).get()
-                .addOnCompleteListener { document ->
-                    _currentUserData.value = document.result.data?.let { User.fromMap(it) }
-                }
+        viewModelScope.launch {
+            _currentUserData.value = usersRepository.getCurrentUserDataOrNull()
+            usersRepository.currentUserId.collect {
+                _currentUserData.value = usersRepository.getCurrentUserDataOrNull()
+            }
         }
     }
 
-    fun signOut(){
-        firebaseAuth.signOut()
+    fun signOut() {
+        viewModelScope.launch {
+            usersRepository.logOutCurrentUser()
+        }
         navigateToLoginScreen()
     }
 
@@ -55,4 +53,14 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val usersRepository = (this[APPLICATION_KEY] as App).usersRepository
+                ProfileViewModel(
+                    usersRepository = usersRepository
+                )
+            }
+        }
+    }
 }

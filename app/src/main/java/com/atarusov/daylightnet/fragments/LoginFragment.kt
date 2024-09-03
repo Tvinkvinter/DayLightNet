@@ -5,35 +5,31 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.databinding.FragmentLoginBinding
+import com.atarusov.daylightnet.model.User
 import com.atarusov.daylightnet.viewmodels.LoginViewModel
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
 
     lateinit var binding: FragmentLoginBinding
-    private lateinit var viewModel: LoginViewModel
-    private lateinit var auth: FirebaseAuth
+    private val viewModel: LoginViewModel by viewModels { LoginViewModel.Factory }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
 
         binding.btnLogIn.setOnClickListener {
             val email = binding.textInputEmail.text.toString()
             val password = binding.textInputPassword.text.toString()
-            viewModel.signInWithEmailAndPassword(email, password)
+            viewModel.signInWithEmailAndPassword(User.LoginData(email, password))
             binding.textInputEmail.clearFocus()
             binding.textInputPassword.clearFocus()
         }
@@ -44,9 +40,10 @@ class LoginFragment : Fragment() {
 
         lifecycleScope.launch {
             viewModel.navigationEvent.collect { navigationEvent ->
-                when(navigationEvent){
+                when (navigationEvent) {
                     LoginViewModel.NavigationEvent.NavigateToRegisterScreen ->
                         findNavController().navigate(R.id.registerFragment)
+
                     LoginViewModel.NavigationEvent.NavigateToBottomNavigationScreens ->
                         findNavController().navigate(R.id.bottomNavFragments)
                 }
@@ -82,10 +79,5 @@ class LoginFragment : Fragment() {
 
 
         return binding.root
-    }
-
-    companion object {
-        val TAG = "LoginFragment"
-        fun newInstance() = LoginFragment()
     }
 }

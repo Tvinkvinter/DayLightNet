@@ -91,7 +91,7 @@
                 android:id="@+id/text_input_email"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:inputType="textPersonName"
+                android:inputType="textEmailAddress"
                 android:maxLines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>

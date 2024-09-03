@@ -1,14 +1,19 @@
 package com.atarusov.daylightnet.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.atarusov.App
+import com.atarusov.daylightnet.data.PostsRepository
+import com.atarusov.daylightnet.data.UsersRepository
+import com.atarusov.daylightnet.model.User
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class LogInValidationState(
@@ -16,8 +21,10 @@ data class LogInValidationState(
     val isPasswordValid: Boolean = true
 )
 
-class LoginViewModel : ViewModel() {
-    private val firebaseAuth = FirebaseAuth.getInstance()
+class LoginViewModel(
+    private val postsRepository: PostsRepository,
+    private val usersRepository: UsersRepository
+) : ViewModel() {
 
     sealed class NavigationEvent {
         object NavigateToRegisterScreen : NavigationEvent()
@@ -25,37 +32,38 @@ class LoginViewModel : ViewModel() {
     }
 
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
-    val navigationEvent = _navigationEvent.asSharedFlow()
+    val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent
 
     private val _validationStateFlow =
         MutableStateFlow<LogInValidationState>(LogInValidationState())
-    val validationStateFlow: StateFlow<LogInValidationState> = _validationStateFlow.asStateFlow()
+    val validationStateFlow: StateFlow<LogInValidationState> = _validationStateFlow
 
     private val _authErrorSharedFlow = MutableSharedFlow<Boolean>()
-    val authErrorSharedFlow: SharedFlow<Boolean> = _authErrorSharedFlow.asSharedFlow()
+    val authErrorSharedFlow: SharedFlow<Boolean> = _authErrorSharedFlow
+
+    var currentUserData: User? = null
 
     init {
-        val currentUser = firebaseAuth.currentUser
-        if (currentUser != null) {
-            navigateToBottomNavigationScreens()
+        viewModelScope.launch {
+            currentUserData = usersRepository.getCurrentUserDataOrNull()
+            usersRepository.currentUserId.collect {
+                currentUserData = usersRepository.getCurrentUserDataOrNull()
+            }
         }
     }
 
-    fun signInWithEmailAndPassword(email: String, password: String) {
+    fun signInWithEmailAndPassword(loginData: User.LoginData) {
 
         _validationStateFlow.value = LogInValidationState(
-            isEmailValid = validEmail(email),
-            isPasswordValid = validPassword(password)
+            isEmailValid = validEmail(loginData.email),
+            isPasswordValid = validPassword(loginData.password)
         )
 
         if (_validationStateFlow.value.isEmailValid && _validationStateFlow.value.isPasswordValid)
-            firebaseAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) navigateToBottomNavigationScreens()
-                    else viewModelScope.launch {
-                        _authErrorSharedFlow.emit(true)
-                    }
-                }
+            viewModelScope.launch {
+                usersRepository.logInUser(loginData)
+                navigateToBottomNavigationScreens()
+            }
     }
 
     private fun validEmail(email: String): Boolean {
@@ -90,4 +98,17 @@ class LoginViewModel : ViewModel() {
         }
     }
 
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val postsRepository = (this[APPLICATION_KEY] as App).postsRepository
+                val usersRepository = (this[APPLICATION_KEY] as App).usersRepository
+
+                LoginViewModel(
+                    postsRepository = postsRepository,
+                    usersRepository = usersRepository
+                )
+            }
+        }
+    }
 }

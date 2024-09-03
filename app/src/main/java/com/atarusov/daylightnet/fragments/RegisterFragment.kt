@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 class RegisterFragment : Fragment() {
 
     lateinit var binding: FragmentRegisterBinding
-    private val viewModel: RegisterViewModel by viewModels()
+    private val viewModel: RegisterViewModel by viewModels { RegisterViewModel.Factory }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -102,10 +102,5 @@ class RegisterFragment : Fragment() {
         binding.textInputEmail.clearFocus()
         binding.textInputPassword.clearFocus()
         binding.textInputRepeatPassword.clearFocus()
-    }
-
-    companion object {
-        val TAG = "RegisterFragment"
-        fun newInstance() = RegisterFragment()
     }
 }

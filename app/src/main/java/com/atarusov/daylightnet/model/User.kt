@@ -1,9 +1,9 @@
 package com.atarusov.daylightnet.model
 
 data class User(
-    val uid: String,
-    val firstName: String,
-    val lastName: String,
+    val uid: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     val additionalInfo: String? = null,
     val avatar: String? = null
 ) {
