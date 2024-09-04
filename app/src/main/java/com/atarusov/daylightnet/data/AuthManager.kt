@@ -1,19 +1,10 @@
 package com.atarusov.daylightnet.data
 
-import android.util.Log
-import androidx.lifecycle.viewModelScope
-import com.atarusov.daylightnet.model.Post
-import com.atarusov.daylightnet.model.User
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 object AuthManager {
     val firebaseAuth = Firebase.auth
@@ -27,8 +18,16 @@ object AuthManager {
         }
     }
 
-    suspend fun logInUser(email: String, password: String) {
-        firebaseAuth.signInWithEmailAndPassword(email, password).await()
+    suspend fun logInUser(email: String, password: String): Result<String> {
+        return try {
+            firebaseAuth.signInWithEmailAndPassword(email, password).await()
+
+            current_user_id.value?.let { Result.success(it) }
+                ?: Result.failure(Exception("User ID is null after login"))
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun logOutCurrentUser() {

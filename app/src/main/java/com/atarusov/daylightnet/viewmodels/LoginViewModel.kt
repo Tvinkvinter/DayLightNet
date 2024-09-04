@@ -38,8 +38,8 @@ class LoginViewModel(
         MutableStateFlow<LogInValidationState>(LogInValidationState())
     val validationStateFlow: StateFlow<LogInValidationState> = _validationStateFlow
 
-    private val _authErrorSharedFlow = MutableSharedFlow<Boolean>()
-    val authErrorSharedFlow: SharedFlow<Boolean> = _authErrorSharedFlow
+    private val _authErrorSharedFlow = MutableSharedFlow<Exception>()
+    val authErrorSharedFlow: SharedFlow<Exception> = _authErrorSharedFlow
 
     var currentUserData: User? = null
 
@@ -61,8 +61,11 @@ class LoginViewModel(
 
         if (_validationStateFlow.value.isEmailValid && _validationStateFlow.value.isPasswordValid)
             viewModelScope.launch {
-                usersRepository.logInUser(loginData)
-                navigateToBottomNavigationScreens()
+                val result = usersRepository.logInUser(loginData)
+                if (result.isSuccess) navigateToBottomNavigationScreens()
+                else {
+                    _authErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
+                }
             }
     }
 
