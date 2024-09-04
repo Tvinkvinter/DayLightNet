@@ -13,6 +13,9 @@ import com.atarusov.daylightnet.databinding.FragmentLoginBinding
 import com.atarusov.daylightnet.model.User
 import com.atarusov.daylightnet.viewmodels.LoginViewModel
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.FirebaseTooManyRequestsException
+import com.google.firebase.auth.FirebaseAuthException
 import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
@@ -68,12 +71,24 @@ class LoginFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewModel.authErrorSharedFlow.collect {
-                if (it == true) Snackbar.make(
-                    requireView(),
-                    getString(R.string.login_sign_in_snackbar_error),
-                    Snackbar.LENGTH_SHORT
-                ).show()
+            viewModel.authErrorSharedFlow.collect { e ->
+                val error_message: String
+                if (e is FirebaseAuthException)
+                    when (e.errorCode) {
+                        "ERROR_INVALID_CREDENTIAL" ->
+                            error_message = getString(R.string.error_invalid_credential)
+
+                        "ERROR_USER_DISABLED" ->
+                            error_message = getString(R.string.error_user_disabled)
+
+                        else -> error_message = getString(R.string.error_unexpected)
+                    }
+                else if (e is FirebaseTooManyRequestsException)
+                    error_message = getString(R.string.error_too_many_requests)
+                else if (e is FirebaseNetworkException)
+                    error_message = getString(R.string.error_network_request_failed)
+                else error_message = getString(R.string.error_unexpected)
+                Snackbar.make(requireView(), error_message, Snackbar.LENGTH_SHORT).show()
             }
         }
 

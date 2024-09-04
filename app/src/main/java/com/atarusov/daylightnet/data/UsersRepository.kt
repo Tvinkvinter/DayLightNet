@@ -42,8 +42,8 @@ class UsersRepository(
         }
     }
 
-    suspend fun logInUser(loginData: User.LoginData) {
-        authManager.logInUser(loginData.email, loginData.password)
+    suspend fun logInUser(loginData: User.LoginData): Result<String> {
+        return authManager.logInUser(loginData.email, loginData.password)
     }
 
     suspend fun logOutCurrentUser() {

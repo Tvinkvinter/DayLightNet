@@ -39,4 +39,13 @@
     <string name="profile_menu_item_log_out">Log Out</string>
     <string name="profile_default_additional_info">Just a good person</string>
 
+    <!-- Error messages -->
+    <!-- common -->
+    <string name="error_too_many_requests">Too many requests. Please try again later</string>
+    <string name="error_network_request_failed">It seems you are offline. Please check your internet connection</string>
+    <string name="error_unexpected">Something went wrongr. Please try again later</string>
+
+    <!-- log in -->
+    <string name="error_invalid_credential">Invalid email or password</string>
+    <string name="error_user_disabled">User account has been disabled</string>
 </resources>
