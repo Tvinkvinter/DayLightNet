@@ -12,6 +12,10 @@ import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.databinding.FragmentProfileBinding
 import com.atarusov.daylightnet.model.User
 import com.atarusov.daylightnet.viewmodels.ProfileViewModel
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.FirebaseTooManyRequestsException
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
@@ -45,6 +49,20 @@ class ProfileFragment : Fragment() {
                     ProfileViewModel.NavigationEvent.NavigateBack ->
                         findNavController().navigateUp()
                 }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.signOutErrorSharedFlow.collect { e ->
+                val error_message: String
+                if (e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.CANCELLED)
+                    error_message = getString(R.string.error_request_was_cancelled)
+                else if (e is FirebaseTooManyRequestsException)
+                    error_message = getString(R.string.error_too_many_requests)
+                else if (e is FirebaseNetworkException)
+                    error_message = getString(R.string.error_network_request_failed)
+                else error_message = getString(R.string.error_unexpected)
+                Snackbar.make(requireView(), error_message, Snackbar.LENGTH_SHORT).show()
             }
         }
 

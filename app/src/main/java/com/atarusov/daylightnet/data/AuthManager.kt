@@ -30,8 +30,13 @@ object AuthManager {
         }
     }
 
-    suspend fun logOutCurrentUser() {
-        firebaseAuth.signOut()
+    suspend fun logOutCurrentUser(): Result<String> {
+        return try {
+            firebaseAuth.signOut()
+            Result.success("User account is successfully signed out")
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun registerUser(email: String, password: String): Result<String> {
@@ -46,7 +51,12 @@ object AuthManager {
         }
     }
 
-    suspend fun deleteCurrentUser(){
-        firebaseAuth.currentUser?.delete()?.await()
+    suspend fun deleteCurrentUser(): Result<String> {
+        return try {
+            firebaseAuth.currentUser?.delete()?.await()
+            Result.success("User account is successfully deleted")
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

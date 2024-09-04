@@ -30,6 +30,9 @@ class ProfileViewModel(
     private val _currentUserData = MutableStateFlow<User?>(null)
     val currentUserData = _currentUserData.asStateFlow()
 
+    private val _signOutErrorSharedFlow = MutableSharedFlow<Exception>()
+    val signOutErrorSharedFlow: SharedFlow<Exception> = _signOutErrorSharedFlow
+
 
     init {
         viewModelScope.launch {
@@ -42,9 +45,10 @@ class ProfileViewModel(
 
     fun signOut() {
         viewModelScope.launch {
-            usersRepository.logOutCurrentUser()
+            val result = usersRepository.logOutCurrentUser()
+            if (result.isSuccess) navigateToLoginScreen()
+            else _signOutErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
         }
-        navigateToLoginScreen()
     }
 
     private fun navigateToLoginScreen() {
