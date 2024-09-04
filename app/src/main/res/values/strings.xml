@@ -48,4 +48,7 @@
     <!-- log in -->
     <string name="error_invalid_credential">Invalid email or password</string>
     <string name="error_user_disabled">User account has been disabled</string>
+
+    <!-- register -->
+    <string name="error_email_already_in_use">The email address is already in use</string>
 </resources>

@@ -32,13 +32,20 @@ class UsersRepository(
         usersRemoteDataSource.deleteUser(user)
     }
 
-    suspend fun registerUser(registrationData: User.RegistrationData) {
+    suspend fun registerUser(registrationData: User.RegistrationData): Result<String> {
         with(registrationData) {
-            authManager.registerUser(email, password)
+            val auth_result = authManager.registerUser(email, password)
+            var add_data_result = Result.failure<String>(
+                Exception("User account hasn't been created, so user data is not added to database")
+            )
+
             currentUserId.value?.let {
                 val user = User(it, firstName, lastName)
-                addUserData(user)
+                add_data_result = addUserData(user)
             }
+
+            if (auth_result.isFailure) return auth_result
+            else return add_data_result
         }
     }
 

@@ -34,8 +34,16 @@ object AuthManager {
         firebaseAuth.signOut()
     }
 
-    suspend fun registerUser(email: String, password: String){
-        firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+    suspend fun registerUser(email: String, password: String): Result<String> {
+        return try {
+            firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+
+            current_user_id.value?.let { Result.success(it) }
+                ?: Result.failure(Exception("User ID is null after registration"))
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun deleteCurrentUser(){

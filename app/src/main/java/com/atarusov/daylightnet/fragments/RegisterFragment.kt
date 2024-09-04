@@ -13,7 +13,12 @@ import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.databinding.FragmentRegisterBinding
 import com.atarusov.daylightnet.model.User
 import com.atarusov.daylightnet.viewmodels.RegisterViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.FirebaseTooManyRequestsException
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
 
 class RegisterFragment : Fragment() {
@@ -62,6 +67,22 @@ class RegisterFragment : Fragment() {
                     if (validationState.isPasswordValid) null else getString(R.string.tif_password_error)
                 binding.inputLayoutRepeatPassword.error =
                     if (validationState.isRepeatPasswordValid) null else getString(R.string.tif_repeat_password_error)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.authErrorSharedFlow.collect { e ->
+                val error_message: String
+                if (e is FirebaseAuthException && e.errorCode == "ERROR_EMAIL_ALREADY_IN_USE")
+                    error_message = getString(R.string.error_email_already_in_use)
+                else if (e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.CANCELLED)
+                    error_message = getString(R.string.error_request_was_cancelled)
+                else if (e is FirebaseTooManyRequestsException)
+                    error_message = getString(R.string.error_too_many_requests)
+                else if (e is FirebaseNetworkException)
+                    error_message = getString(R.string.error_network_request_failed)
+                else error_message = getString(R.string.error_unexpected)
+                Snackbar.make(requireView(), error_message, Snackbar.LENGTH_SHORT).show()
             }
         }
 

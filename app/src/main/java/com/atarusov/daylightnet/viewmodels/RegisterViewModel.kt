@@ -11,9 +11,9 @@ import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.User
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class RegisterValidationState(
@@ -37,9 +37,11 @@ class RegisterViewModel(
         MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
-    private val _validationStateFlow =
-        MutableStateFlow<RegisterValidationState>(RegisterValidationState())
-    val validationStateFlow: StateFlow<RegisterValidationState> = _validationStateFlow.asStateFlow()
+    private val _validationStateFlow = MutableStateFlow<RegisterValidationState>(RegisterValidationState())
+    val validationStateFlow: StateFlow<RegisterValidationState> = _validationStateFlow
+
+    private val _authErrorSharedFlow = MutableSharedFlow<Exception>()
+    val authErrorSharedFlow: SharedFlow<Exception> = _authErrorSharedFlow
 
     fun signUpWithEmailAndPassword(registrationData: User.RegistrationData) {
         _validationStateFlow.value = RegisterValidationState(
@@ -55,8 +57,11 @@ class RegisterViewModel(
 
         if (isAllDataValid())
             viewModelScope.launch {
-                usersRepository.registerUser(registrationData)
-                navigateToBottomNavigationScreens()
+                val result = usersRepository.registerUser(registrationData)
+                if (result.isSuccess) navigateToBottomNavigationScreens()
+                else {
+                    _authErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
+                }
             }
     }
 
