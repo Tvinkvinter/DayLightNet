@@ -8,31 +8,31 @@ class PostsRepository(
 ) {
     val posts: StateFlow<List<Post>> = postsRemoteDataSource.posts
 
-    suspend fun addPost(post: Post) {
-        postsRemoteDataSource.addOrUpdatePost(post)
+    suspend fun addPost(post: Post): Result<String> {
+        return postsRemoteDataSource.addOrUpdatePost(post)
     }
 
-    suspend fun updatePost(post: Post) {
-        postsRemoteDataSource.addOrUpdatePost(post)
+    suspend fun updatePost(post: Post): Result<String> {
+        return postsRemoteDataSource.addOrUpdatePost(post)
     }
 
-    suspend fun likePost(post: Post, userId: String) {
+    suspend fun likePost(post: Post, userId: String): Result<String> {
         val updated_post = post.copy(
             likes = post.likes + 1
         )
         updated_post.idsOfUsersLiked.add(userId)
-        updatePost(updated_post)
+        return updatePost(updated_post)
     }
 
-    suspend fun unlikePost(post: Post, userId: String) {
+    suspend fun unlikePost(post: Post, userId: String): Result<String> {
         val updated_post = post.copy(
             likes = post.likes - 1
         )
         updated_post.idsOfUsersLiked.remove(userId)
-        updatePost(updated_post)
+        return updatePost(updated_post)
     }
 
-    suspend fun deletePost(postId: String) {
-        postsRemoteDataSource.deletePost(postId)
+    suspend fun deletePost(postId: String): Result<String> {
+        return postsRemoteDataSource.deletePost(postId)
     }
 }

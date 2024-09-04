@@ -2,6 +2,7 @@ package com.atarusov.daylightnet.data
 
 import com.atarusov.daylightnet.model.User
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,8 +26,13 @@ class UsersRemoteDataSource {
         }
     }
 
-    suspend fun addOrUpdateUser(user: User) {
-        firestore.collection("users").document(user.uid).set(user).await()
+    suspend fun addOrUpdateUser(user: User): Result<String> {
+        return try {
+            firestore.collection("users").document(user.uid).set(user).await()
+            Result.success("Data about user with id ${user.uid} sucessfully set")
+        } catch (e: Exception) {
+            return Result.failure(e)
+        }
     }
 
     suspend fun getUserDataOrNullById(userId: String): User? {
@@ -34,7 +40,12 @@ class UsersRemoteDataSource {
         return documentSnapshot.data?.let { User.fromMap(it) }
     }
 
-    suspend fun deleteUser(user: User) {
-        firestore.collection("users").document(user.uid).delete().await()
+    suspend fun deleteUserById(userId: String): Result<String> {
+        return try {
+            firestore.collection("users").document(userId).delete().await()
+            Result.success("Data about user with id ${userId} sucessfully deleted")
+        } catch (e: Exception) {
+            Result.failure<String>(e)
+        }
     }
 }

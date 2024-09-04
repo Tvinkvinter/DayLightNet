@@ -1,6 +1,5 @@
 package com.atarusov.daylightnet.data
 
-import android.util.Log
 import com.atarusov.daylightnet.model.User
 import kotlinx.coroutines.flow.StateFlow
 
@@ -20,16 +19,20 @@ class UsersRepository(
         return currentUserId.value?.let { usersRemoteDataSource.getUserDataOrNullById(it) }
     }
 
-    suspend fun addUserData(user: User) {
-        usersRemoteDataSource.addOrUpdateUser(user)
+    suspend fun addUserData(user: User): Result<String> {
+        return usersRemoteDataSource.addOrUpdateUser(user)
     }
 
-    suspend fun updateUserData(user: User) {
-        usersRemoteDataSource.addOrUpdateUser(user)
+    suspend fun updateUserData(user: User): Result<String> {
+        return usersRemoteDataSource.addOrUpdateUser(user)
     }
 
-    suspend fun deleteUserData(user: User) {
-        usersRemoteDataSource.deleteUser(user)
+    suspend fun deleteCurrentUserAccountAndData(): Result<String> {
+        val user_id = currentUserId.value
+        val delete_account_result = authManager.deleteCurrentUser()
+        if (delete_account_result.isSuccess) user_id?.let { usersRemoteDataSource.deleteUserById(it) }
+
+        return delete_account_result
     }
 
     suspend fun registerUser(registrationData: User.RegistrationData): Result<String> {
@@ -53,7 +56,7 @@ class UsersRepository(
         return authManager.logInUser(loginData.email, loginData.password)
     }
 
-    suspend fun logOutCurrentUser() {
-        authManager.logOutCurrentUser()
+    suspend fun logOutCurrentUser(): Result<String> {
+        return authManager.logOutCurrentUser()
     }
 }

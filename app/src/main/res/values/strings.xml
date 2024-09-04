@@ -51,4 +51,8 @@
 
     <!-- register -->
     <string name="error_email_already_in_use">The email address is already in use</string>
+
+    <!-- firestore -->
+    <string name="error_request_was_cancelled">Request was cancelled</string>
+
 </resources>

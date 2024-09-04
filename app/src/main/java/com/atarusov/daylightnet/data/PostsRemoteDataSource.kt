@@ -27,11 +27,21 @@ class PostsRemoteDataSource {
         }
     }
 
-    suspend fun addOrUpdatePost(post: Post) {
-        firestore.collection("posts").document(post.id).set(post).await()
+    suspend fun addOrUpdatePost(post: Post): Result<String> {
+        return try{
+            firestore.collection("posts").document(post.id).set(post).await()
+            Result.success("Post wuth ID ${post.id} is successfully set")
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
-    suspend fun deletePost(postId: String) {
-        firestore.collection("posts").document(postId).delete().await()
+    suspend fun deletePost(postId: String): Result<String> {
+        return try{
+            firestore.collection("posts").document(postId).delete().await()
+            Result.success("Post wuth ID ${postId} is successfully deleted")
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

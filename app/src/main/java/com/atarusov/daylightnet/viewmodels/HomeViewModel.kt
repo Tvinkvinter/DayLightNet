@@ -12,6 +12,8 @@ import com.atarusov.daylightnet.data.PostsRepository
 import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.Post
 import com.atarusov.daylightnet.model.User
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -22,6 +24,9 @@ class HomeViewModel(
 
     val posts: StateFlow<List<Post>> = postsRepository.posts
     var currentUserData: User? = null
+
+    private val _errorSharedFlow = MutableSharedFlow<Exception>()
+    val errorSharedFlow: SharedFlow<Exception> = _errorSharedFlow
 
     init {
         viewModelScope.launch {
@@ -36,11 +41,13 @@ class HomeViewModel(
         val current_user = currentUserData
         viewModelScope.launch {
             if (current_user != null) {
+                val result: Result<String>
                 if (post.idsOfUsersLiked.contains(current_user.uid)) {
-                    postsRepository.unlikePost(post, current_user.uid)
+                    result = postsRepository.unlikePost(post, current_user.uid)
                 } else {
-                    postsRepository.likePost(post, current_user.uid)
+                    result = postsRepository.likePost(post, current_user.uid)
                 }
+                if (result.isFailure) _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
             }
         }
     }
