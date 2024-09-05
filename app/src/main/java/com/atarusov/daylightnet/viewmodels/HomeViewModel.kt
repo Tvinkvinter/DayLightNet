@@ -12,10 +12,12 @@ import com.atarusov.daylightnet.data.PostsRepository
 import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.Post
 import com.atarusov.daylightnet.model.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeViewModel(
     private val postsRepository: PostsRepository,
@@ -29,36 +31,39 @@ class HomeViewModel(
     val errorSharedFlow: SharedFlow<Exception> = _errorSharedFlow
 
     init {
-        viewModelScope.launch {
-            //currentUserData = usersRepository.getCurrentUserDataOrNull()
-            usersRepository.currentUserId.collect {
-                currentUserData = usersRepository.getCurrentUserDataOrNull()
+        viewModelScope.launch(Dispatchers.IO) {
+            val userData = usersRepository.getCurrentUserDataOrNull()
+
+            withContext(Dispatchers.Main) {
+                currentUserData = userData
             }
         }
     }
 
     fun handleLikeButtonClick(post: Post) {
         val current_user = currentUserData
-        viewModelScope.launch {
-            if (current_user != null) {
-                val result: Result<String>
-                if (post.idsOfUsersLiked.contains(current_user.uid)) {
-                    result = postsRepository.unlikePost(post, current_user.uid)
-                } else {
-                    result = postsRepository.likePost(post, current_user.uid)
-                }
-                if (result.isFailure) _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
+        if (current_user == null) return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = if (post.idsOfUsersLiked.contains(current_user.uid)) {
+                postsRepository.unlikePost(post, current_user.uid)
+            } else {
+                postsRepository.likePost(post, current_user.uid)
             }
+            if (result.isFailure)
+                withContext(Dispatchers.Main) {
+                    _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
+                }
         }
     }
 
     fun addPost(post: Post) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             postsRepository.addPost(post)
         }
     }
 
-    fun addTestPost(){
+    fun addTestPost() {
         val test_post = currentUserData?.let {
             Post(
                 userId = it.uid,

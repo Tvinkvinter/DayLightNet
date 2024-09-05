@@ -9,12 +9,14 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.atarusov.App
 import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class RegisterValidationState(
     val isFirstNameValid: Boolean = true,
@@ -37,7 +39,8 @@ class RegisterViewModel(
         MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
-    private val _validationStateFlow = MutableStateFlow<RegisterValidationState>(RegisterValidationState())
+    private val _validationStateFlow =
+        MutableStateFlow<RegisterValidationState>(RegisterValidationState())
     val validationStateFlow: StateFlow<RegisterValidationState> = _validationStateFlow
 
     private val _authErrorSharedFlow = MutableSharedFlow<Exception>()
@@ -56,11 +59,12 @@ class RegisterViewModel(
         )
 
         if (isAllDataValid())
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO) {
                 val result = usersRepository.registerUser(registrationData)
-                if (result.isSuccess) navigateToBottomNavigationScreens()
-                else {
-                    _authErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
+
+                withContext(Dispatchers.Main) {
+                    if (result.isSuccess) navigateToBottomNavigationScreens()
+                    else _authErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
                 }
             }
     }

@@ -10,11 +10,13 @@ import com.atarusov.App
 import com.atarusov.daylightnet.data.PostsRepository
 import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class LogInValidationState(
     val isEmailValid: Boolean = true,
@@ -44,8 +46,7 @@ class LoginViewModel(
     var currentUserData: User? = null
 
     init {
-        viewModelScope.launch {
-            currentUserData = usersRepository.getCurrentUserDataOrNull()
+        viewModelScope.launch(Dispatchers.IO) {
             usersRepository.currentUserId.collect {
                 currentUserData = usersRepository.getCurrentUserDataOrNull()
             }
@@ -60,11 +61,12 @@ class LoginViewModel(
         )
 
         if (_validationStateFlow.value.isEmailValid && _validationStateFlow.value.isPasswordValid)
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO) {
                 val result = usersRepository.logInUser(loginData)
-                if (result.isSuccess) navigateToBottomNavigationScreens()
-                else {
-                    _authErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
+
+                withContext(Dispatchers.Main) {
+                    if (result.isSuccess) navigateToBottomNavigationScreens()
+                    else _authErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
                 }
             }
     }

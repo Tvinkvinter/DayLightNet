@@ -9,11 +9,13 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.atarusov.App
 import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ProfileViewModel(
     private val usersRepository: UsersRepository
@@ -28,15 +30,14 @@ class ProfileViewModel(
     val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent
 
     private val _currentUserData = MutableStateFlow<User?>(null)
-    val currentUserData = _currentUserData.asStateFlow()
+    val currentUserData = _currentUserData
 
     private val _signOutErrorSharedFlow = MutableSharedFlow<Exception>()
     val signOutErrorSharedFlow: SharedFlow<Exception> = _signOutErrorSharedFlow
 
 
     init {
-        viewModelScope.launch {
-            _currentUserData.value = usersRepository.getCurrentUserDataOrNull()
+        viewModelScope.launch(Dispatchers.IO) {
             usersRepository.currentUserId.collect {
                 _currentUserData.value = usersRepository.getCurrentUserDataOrNull()
             }
@@ -44,10 +45,13 @@ class ProfileViewModel(
     }
 
     fun signOut() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val result = usersRepository.logOutCurrentUser()
-            if (result.isSuccess) navigateToLoginScreen()
-            else _signOutErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
+
+            withContext(Dispatchers.Main) {
+                if (result.isSuccess) navigateToLoginScreen()
+                else _signOutErrorSharedFlow.emit(result.exceptionOrNull() as Exception)
+            }
         }
     }
 
