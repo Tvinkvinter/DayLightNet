@@ -8,5 +8,8 @@ data class Post(
     val content: String = "",
     val timestamp: Long = System.currentTimeMillis(),
     val idsOfUsersLiked: MutableList<String> = mutableListOf(),
-    val likes: Int = idsOfUsersLiked.size,
-)
+) {
+    var likes: Int = 0
+        get() = idsOfUsersLiked.size
+        private set
+}

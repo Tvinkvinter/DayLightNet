@@ -12,24 +12,14 @@ class PostsRepository(
         return postsRemoteDataSource.addOrUpdatePost(post)
     }
 
-    suspend fun updatePost(post: Post): Result<String> {
+    suspend fun likePost(post: Post, userId: String): Result<String> {
+        post.idsOfUsersLiked.add(userId)
         return postsRemoteDataSource.addOrUpdatePost(post)
     }
 
-    suspend fun likePost(post: Post, userId: String): Result<String> {
-        val updated_post = post.copy(
-            likes = post.likes + 1
-        )
-        updated_post.idsOfUsersLiked.add(userId)
-        return updatePost(updated_post)
-    }
-
     suspend fun unlikePost(post: Post, userId: String): Result<String> {
-        val updated_post = post.copy(
-            likes = post.likes - 1
-        )
-        updated_post.idsOfUsersLiked.remove(userId)
-        return updatePost(updated_post)
+        post.idsOfUsersLiked.remove(userId)
+        return postsRemoteDataSource.addOrUpdatePost(post)
     }
 
     suspend fun deletePost(postId: String): Result<String> {

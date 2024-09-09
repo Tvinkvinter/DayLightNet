@@ -1,33 +1,27 @@
 package com.atarusov.daylightnet.adapters
 
-import android.R.attr.button
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.icu.text.SimpleDateFormat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.core.graphics.drawable.toBitmap
 import androidx.recyclerview.widget.RecyclerView
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.databinding.PostItemBinding
 import com.atarusov.daylightnet.model.Post
-import com.atarusov.daylightnet.model.User
+import com.atarusov.daylightnet.model.PostCard
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 import java.util.Date
 import java.util.Locale
 
 
 class PostsAdapter(
     private val context: Context,
-    private val onLikeButtonClick: (Post) -> Unit
+    private val onLikeButtonClick: (PostCard) -> Unit,
 ) :
     RecyclerView.Adapter<PostsAdapter.PostsViewHolder>() {
 
@@ -38,10 +32,10 @@ class PostsAdapter(
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val database = Firebase.firestore
 
-    var posts: List<Post> = emptyList()
+    var postCards: List<PostCard> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
-            field = value.sortedByDescending { it.timestamp }
+            field = value.sortedByDescending { it.post.timestamp }
             notifyDataSetChanged()
         }
 
@@ -55,33 +49,28 @@ class PostsAdapter(
     }
 
     override fun onBindViewHolder(holder: PostsViewHolder, position: Int) {
-        val post = posts[position]
-        var postAuthor: User? = null
-        val postAuthorRef = database.collection("users").document(post.userId)
-        postAuthorRef.get().addOnSuccessListener { authorSnapshot ->
-            postAuthor = authorSnapshot.toObject<User>()
-            holder.binding.authorNameTv.text = context.getString(
-                R.string.profile_username,
-                postAuthor?.firstName, postAuthor?.lastName
-            )
-            Log.i(TAG, "Post author sucessfully loaded")
+        val postCard = postCards[position]
 
-        }.addOnFailureListener { exception ->
-            Log.w(TAG, "Error getting documents: ", exception)
-        }
+        holder.binding.authorNameTv.text = context.getString(
+            R.string.profile_username,
+            postCard.author.firstName,
+            postCard.author.lastName
+        )
 
-        holder.binding.timestampTv.text = getFormattedDateString(post.timestamp, "dd/MM/yyyy HH:mm")
-        holder.binding.contentTv.text = post.content
-        holder.binding.likeBtn.text = post.likes.toString()
-        setLikeButtonColor(holder.binding.likeBtn, isPostLiked(post))
+        holder.binding.timestampTv.text =
+            getFormattedDateString(postCard.post.timestamp, "dd/MM/yyyy HH:mm")
+        holder.binding.contentTv.text = postCard.post.content
+        holder.binding.likeBtn.text = postCard.post.likes.toString()
+        setLikeButtonColor(holder.binding.likeBtn, isPostLiked(postCard.post))
 
         holder.binding.likeBtn.setOnClickListener {
-            onLikeButtonClick(post)
-            setLikeButtonColor(it as MaterialButton, isPostLiked(post))
+            onLikeButtonClick(postCard)
+            setLikeButtonColor(it as MaterialButton, isPostLiked(postCard.post))
+            notifyItemChanged(position)
         }
     }
 
-    override fun getItemCount(): Int = posts.size
+    override fun getItemCount(): Int = postCards.size
 
     fun isPostLiked(post: Post) = post.idsOfUsersLiked.contains(firebaseAuth.uid)
 

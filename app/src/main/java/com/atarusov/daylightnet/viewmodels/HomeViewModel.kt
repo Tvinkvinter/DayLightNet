@@ -11,11 +11,14 @@ import com.atarusov.App
 import com.atarusov.daylightnet.data.PostsRepository
 import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.Post
+import com.atarusov.daylightnet.model.PostCard
 import com.atarusov.daylightnet.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,14 +30,25 @@ class HomeViewModel(
     val posts: StateFlow<List<Post>> = postsRepository.posts
     var currentUserData: User? = null
 
+    private val _postCards = MutableStateFlow<List<PostCard>>(emptyList())
+    val postCards: StateFlow<List<PostCard>> = _postCards
+
     private val _errorSharedFlow = MutableSharedFlow<Exception>()
     val errorSharedFlow: SharedFlow<Exception> = _errorSharedFlow
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            val userData = usersRepository.getCurrentUserDataOrNull()
+        viewModelScope.launch {
+            posts.first { it.isNotEmpty() }
+            getPostCards()
+        }
 
-            withContext(Dispatchers.Main) {
+        viewModelScope.launch(Dispatchers.Main) {
+            usersRepository.currentUserId.collect {
+
+                val userData = withContext(Dispatchers.IO) {
+                    usersRepository.getCurrentUserDataOrNull()
+                }
+
                 currentUserData = userData
             }
         }
@@ -43,17 +57,39 @@ class HomeViewModel(
     fun handleLikeButtonClick(post: Post) {
         val current_user = currentUserData
         if (current_user == null) return
+    fun getPostCards() {
+        viewModelScope.launch {
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val result = if (post.idsOfUsersLiked.contains(current_user.uid)) {
-                postsRepository.unlikePost(post, current_user.uid)
-            } else {
-                postsRepository.likePost(post, current_user.uid)
-            }
-            if (result.isFailure)
-                withContext(Dispatchers.Main) {
-                    _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
+            val newPostCards = mutableListOf<PostCard>()
+
+            for (post in posts.value) {
+                val author = withContext(Dispatchers.IO) {
+                    usersRepository.getUserDataOrNullById(post.userId)
                 }
+
+                if (author != null) newPostCards.add(PostCard(post, author))
+            }
+
+            _postCards.value = newPostCards
+
+            _isLoading.value = false
+        }
+    }
+
+    fun handleLikeButtonClick(postCard: PostCard) {
+        currentUserData?.let { user ->
+            viewModelScope.launch(Dispatchers.IO) {
+                val result = if (postCard.post.idsOfUsersLiked.contains(user.uid)) {
+                    postsRepository.unlikePost(postCard.post, user.uid)
+                } else {
+                    postsRepository.likePost(postCard.post, user.uid)
+                }
+
+                if (result.isFailure)
+                    withContext(Dispatchers.Main) {
+                        _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
+                    }
+            }
         }
     }
 

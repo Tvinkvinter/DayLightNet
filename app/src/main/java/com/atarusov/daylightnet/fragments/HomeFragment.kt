@@ -11,12 +11,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.adapters.PostsAdapter
 import com.atarusov.daylightnet.databinding.FragmentHomeBinding
-import com.atarusov.daylightnet.model.Post
+import com.atarusov.daylightnet.model.PostCard
 import com.atarusov.daylightnet.viewmodels.HomeViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.firestore.FirebaseFirestoreException
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
@@ -30,8 +31,8 @@ class HomeFragment : Fragment() {
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        binding.postsRw.adapter = PostsAdapter(requireContext()) { post: Post ->
-            viewModel.handleLikeButtonClick(post)
+        binding.postsRw.adapter = PostsAdapter(requireContext()) { postCard: PostCard ->
+            viewModel.handleLikeButtonClick(postCard)
         }
         binding.postsRw.layoutManager = LinearLayoutManager(requireContext())
 
@@ -42,6 +43,8 @@ class HomeFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.posts.collect { posts ->
                 (binding.postsRw.adapter as PostsAdapter).posts = posts
+            viewModel.postCards.collectLatest { postCards ->
+                (binding.postsRw.adapter as PostsAdapter).postCards = postCards
             }
         }
 
