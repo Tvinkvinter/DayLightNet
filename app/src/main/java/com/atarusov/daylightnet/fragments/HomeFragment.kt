@@ -41,10 +41,14 @@ class HomeFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewModel.posts.collect { posts ->
-                (binding.postsRw.adapter as PostsAdapter).posts = posts
             viewModel.postCards.collectLatest { postCards ->
                 (binding.postsRw.adapter as PostsAdapter).postCards = postCards
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.isLoading.collectLatest { isLoading ->
+                setLoadingState(isLoading)
             }
         }
 
@@ -63,6 +67,22 @@ class HomeFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    fun setLoadingState(isLoading: Boolean) {
+        if (isLoading) {
+            binding.postsRw.visibility = View.GONE
+            binding.addPostBtn.visibility = View.GONE
+            binding.loadingAnim.visibility = View.VISIBLE
+            binding.loadingAnim.setMinFrame(0)
+            binding.loadingAnim.setMaxFrame(102)
+            binding.loadingAnim.playAnimation()
+        } else {
+            binding.postsRw.visibility = View.VISIBLE
+            binding.addPostBtn.visibility = View.VISIBLE
+            binding.loadingAnim.visibility = View.GONE
+            binding.loadingAnim.pauseAnimation()
+        }
     }
 
     companion object {

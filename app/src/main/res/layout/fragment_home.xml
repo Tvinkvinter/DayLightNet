@@ -15,6 +15,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/loading_anim"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/anim_loading_sun" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_post_btn"
         android:layout_width="wrap_content"

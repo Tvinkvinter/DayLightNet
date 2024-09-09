@@ -33,6 +33,9 @@ class HomeViewModel(
     private val _postCards = MutableStateFlow<List<PostCard>>(emptyList())
     val postCards: StateFlow<List<PostCard>> = _postCards
 
+    private val _isLoading = MutableStateFlow<Boolean>(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     private val _errorSharedFlow = MutableSharedFlow<Exception>()
     val errorSharedFlow: SharedFlow<Exception> = _errorSharedFlow
 
@@ -54,11 +57,9 @@ class HomeViewModel(
         }
     }
 
-    fun handleLikeButtonClick(post: Post) {
-        val current_user = currentUserData
-        if (current_user == null) return
     fun getPostCards() {
         viewModelScope.launch {
+            _isLoading.value = true
 
             val newPostCards = mutableListOf<PostCard>()
 
