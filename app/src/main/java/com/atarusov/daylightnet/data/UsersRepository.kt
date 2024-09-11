@@ -1,5 +1,6 @@
 package com.atarusov.daylightnet.data
 
+import android.util.Log
 import com.atarusov.daylightnet.model.User
 import kotlinx.coroutines.flow.StateFlow
 
@@ -31,6 +32,7 @@ class UsersRepository(
         val user_id = currentUserId.value
         val delete_account_result = authManager.deleteCurrentUser()
         if (delete_account_result.isSuccess) user_id?.let { usersRemoteDataSource.deleteUserById(it) }
+        else Log.d(TAG, "User account hasn't been deleted, so data deleting process is not started ")
 
         return delete_account_result
     }
@@ -47,6 +49,9 @@ class UsersRepository(
                 add_data_result = addUserData(user)
             }
 
+            Log.d(TAG, auth_result.toString())
+            Log.d(TAG, add_data_result.toString())
+
             if (auth_result.isFailure) return auth_result
             else return add_data_result
         }
@@ -58,5 +63,9 @@ class UsersRepository(
 
     suspend fun logOutCurrentUser(): Result<String> {
         return authManager.logOutCurrentUser()
+    }
+
+    companion object {
+        val TAG = UsersRepository::class.java.simpleName
     }
 }

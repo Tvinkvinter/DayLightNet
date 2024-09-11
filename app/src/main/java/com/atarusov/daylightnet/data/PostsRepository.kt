@@ -25,4 +25,8 @@ class PostsRepository(
     suspend fun deletePost(postId: String): Result<String> {
         return postsRemoteDataSource.deletePost(postId)
     }
+
+    companion object {
+        val TAG = PostsRepository::class.java.simpleName
+    }
 }
