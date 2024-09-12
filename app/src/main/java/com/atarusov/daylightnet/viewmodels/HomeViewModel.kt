@@ -37,6 +37,9 @@ class HomeViewModel(
     private val _isLoading = MutableStateFlow<Boolean>(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _scrollUpEvent = MutableSharedFlow<Boolean>()
+    val scrollUpEvent: SharedFlow<Boolean> = _scrollUpEvent
+
     private val _errorSharedFlow = MutableSharedFlow<Exception>()
     val errorSharedFlow: SharedFlow<Exception> = _errorSharedFlow
 
@@ -87,6 +90,8 @@ class HomeViewModel(
     fun addPost(post: Post) {
         viewModelScope.launch(Dispatchers.IO) {
             postsRepository.addPost(post)
+            _scrollUpEvent.emit(true)
+            getPostCards()
         }
     }
 

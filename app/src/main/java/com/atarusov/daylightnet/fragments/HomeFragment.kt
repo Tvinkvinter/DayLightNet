@@ -17,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.firestore.FirebaseFirestoreException
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -49,6 +50,12 @@ class HomeFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.postCards.collectLatest { postCards ->
                 (binding.postsRw.adapter as PostsAdapter).postCards = postCards
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.scrollUpEvent.collect() {
+                binding.postsRw.smoothScrollToPosition(0)
             }
         }
 
