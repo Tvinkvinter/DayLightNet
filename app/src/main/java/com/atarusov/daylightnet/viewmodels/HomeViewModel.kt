@@ -37,6 +37,9 @@ class HomeViewModel(
     private val _isLoading = MutableStateFlow<Boolean>(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _noPostsMessage = MutableSharedFlow<Boolean>()
+    val noPostsMessage: SharedFlow<Boolean> = _noPostsMessage
+
     private val _scrollUpEvent = MutableSharedFlow<Boolean>()
     val scrollUpEvent: SharedFlow<Boolean> = _scrollUpEvent
 
@@ -67,6 +70,8 @@ class HomeViewModel(
                 _postCards.value = newPostCards
             }
 
+            if (newPostCards.isEmpty()) _noPostsMessage.emit(true)
+            else _noPostsMessage.emit(false)
         }
     }
 

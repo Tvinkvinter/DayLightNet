@@ -27,6 +27,19 @@
         app:lottie_loop="true"
         app:lottie_rawRes="@raw/anim_loading_sun" />
 
+    <TextView
+        android:id="@+id/no_posts_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/home_no_posts_message"
+        android:visibility="gone"
+        style="@style/BaseText.Header.Header3"
+        android:textColor="@color/on_background_light"/>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_post_btn"
         android:layout_width="wrap_content"

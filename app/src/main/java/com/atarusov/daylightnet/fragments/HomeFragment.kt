@@ -66,6 +66,12 @@ class HomeFragment : Fragment() {
         }
 
         lifecycleScope.launch {
+            viewModel.noPostsMessage.collectLatest {
+                binding.noPostsTv.visibility = if(it) View.VISIBLE else View.GONE
+            }
+        }
+
+        lifecycleScope.launch {
             viewModel.errorSharedFlow.collect { e ->
                 val error_message: String
                 if (e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.CANCELLED)
