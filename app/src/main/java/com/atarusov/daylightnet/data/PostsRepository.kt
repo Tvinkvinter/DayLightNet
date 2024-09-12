@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 class PostsRepository(
     private val postsRemoteDataSource: PostsRemoteDataSource
 ) {
-    val posts: StateFlow<List<Post>> = postsRemoteDataSource.posts
+    val posts: StateFlow<List<Post>?> = postsRemoteDataSource.posts
 
     suspend fun addPost(post: Post): Result<String> {
         return postsRemoteDataSource.addOrUpdatePost(post)

@@ -13,8 +13,8 @@ import kotlinx.coroutines.tasks.await
 class PostsRemoteDataSource {
     private val firestore = Firebase.firestore
 
-    private val _posts = MutableStateFlow<List<Post>>(emptyList())
-    val posts: StateFlow<List<Post>> = _posts
+    private val _posts = MutableStateFlow<List<Post>?>(null)
+    val posts: StateFlow<List<Post>?> = _posts
 
     init {
         firestore.collection("posts").addSnapshotListener { value, error ->

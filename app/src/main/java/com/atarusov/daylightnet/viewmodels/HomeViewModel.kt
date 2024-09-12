@@ -27,7 +27,7 @@ class HomeViewModel(
     private val usersRepository: UsersRepository
 ) : ViewModel() {
 
-    val posts: StateFlow<List<Post>> = postsRepository.posts
+    val posts: StateFlow<List<Post>?> = postsRepository.posts
     val users: StateFlow<List<User>> = usersRepository.users
     var currentUserId: StateFlow<String?> = usersRepository.currentUserId
 
@@ -52,7 +52,6 @@ class HomeViewModel(
 
     fun getPostCards() {
         viewModelScope.launch {
-            _isLoading.value = true
 
             val newPostCards = mutableListOf<PostCard>()
             posts.value?.let { posts ->
