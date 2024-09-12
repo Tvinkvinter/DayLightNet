@@ -48,26 +48,18 @@ class HomeFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewModel.postCards.collectLatest { postCards ->
-                (binding.postsRw.adapter as PostsAdapter).postCards = postCards
+            viewModel.uiState.collect() { state ->
+                when (state) {
+                    is HomeViewModel.UiState.Loading -> setLoadingState()
+                    is HomeViewModel.UiState.ShowingNoPostsMessage -> setShowingNoPostsMessageState()
+                    is HomeViewModel.UiState.ShowingPosts -> setShowingPostsState(state.postCards)
+                }
             }
         }
 
         lifecycleScope.launch {
             viewModel.scrollUpEvent.collect() {
                 binding.postsRw.smoothScrollToPosition(0)
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.isLoading.collectLatest { isLoading ->
-                setLoadingState(isLoading)
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.noPostsMessage.collectLatest {
-                binding.noPostsTv.visibility = if(it) View.VISIBLE else View.GONE
             }
         }
 
@@ -88,20 +80,33 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    fun setLoadingState(isLoading: Boolean) {
-        if (isLoading) {
-            binding.postsRw.visibility = View.GONE
-            binding.addPostBtn.visibility = View.GONE
-            binding.loadingAnim.visibility = View.VISIBLE
-            binding.loadingAnim.setMinFrame(0)
-            binding.loadingAnim.setMaxFrame(102)
-            binding.loadingAnim.playAnimation()
-        } else {
-            binding.postsRw.visibility = View.VISIBLE
-            binding.addPostBtn.visibility = View.VISIBLE
-            binding.loadingAnim.visibility = View.GONE
-            binding.loadingAnim.pauseAnimation()
-        }
+    fun setLoadingState() {
+        binding.loadingAnim.visibility = View.VISIBLE
+        binding.loadingAnim.setMinFrame(0)
+        binding.loadingAnim.setMaxFrame(102)
+        binding.loadingAnim.playAnimation()
+
+        binding.postsRw.visibility = View.GONE
+        binding.addPostBtn.visibility = View.GONE
+    }
+
+    fun setShowingNoPostsMessageState() {
+        binding.noPostsTv.visibility = View.VISIBLE
+        binding.addPostBtn.visibility = View.VISIBLE
+
+        binding.postsRw.visibility = View.GONE
+        binding.loadingAnim.visibility = View.GONE
+        binding.loadingAnim.pauseAnimation()
+    }
+
+    fun setShowingPostsState(postCards: List<PostCard>) {
+        (binding.postsRw.adapter as PostsAdapter).postCards = postCards
+        binding.postsRw.visibility = View.VISIBLE
+        binding.addPostBtn.visibility = View.VISIBLE
+
+        binding.noPostsTv.visibility = View.GONE
+        binding.loadingAnim.visibility = View.GONE
+        binding.loadingAnim.pauseAnimation()
     }
 
     companion object {

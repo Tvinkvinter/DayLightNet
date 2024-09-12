@@ -27,18 +27,18 @@ class HomeViewModel(
     private val usersRepository: UsersRepository
 ) : ViewModel() {
 
+    sealed class UiState {
+        object Loading : UiState()
+        data class ShowingPosts(val postCards: List<PostCard>) : UiState()
+        object ShowingNoPostsMessage : UiState()
+    }
+
     val posts: StateFlow<List<Post>?> = postsRepository.posts
     val users: StateFlow<List<User>> = usersRepository.users
     var currentUserId: StateFlow<String?> = usersRepository.currentUserId
 
-    private val _postCards = MutableStateFlow<List<PostCard>>(emptyList())
-    val postCards: StateFlow<List<PostCard>> = _postCards
-
-    private val _isLoading = MutableStateFlow<Boolean>(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
-
-    private val _noPostsMessage = MutableSharedFlow<Boolean>()
-    val noPostsMessage: SharedFlow<Boolean> = _noPostsMessage
+    private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
+    val uiState: StateFlow<UiState> = _uiState
 
     private val _scrollUpEvent = MutableSharedFlow<Boolean>()
     val scrollUpEvent: SharedFlow<Boolean> = _scrollUpEvent
@@ -48,17 +48,17 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-            _isLoading.value = true
+            _uiState.value = UiState.Loading
             posts.first { it != null }
             users.first { it.isNotEmpty() }
-            getPostCards()
-            _isLoading.value = false
+            composeAndShowPostCards()
         }
     }
 
-    fun getPostCards() {
+    fun composeAndShowPostCards() {
+        Log.d(TAG, "getPostCards()")
         viewModelScope.launch {
-
+            _uiState.value = UiState.Loading
             val newPostCards = mutableListOf<PostCard>()
             posts.value?.let { posts ->
                 for (post in posts) {
@@ -66,12 +66,10 @@ class HomeViewModel(
 
                     if (author != null) newPostCards.add(PostCard(post, author))
                 }
-
-                _postCards.value = newPostCards
             }
 
-            if (newPostCards.isEmpty()) _noPostsMessage.emit(true)
-            else _noPostsMessage.emit(false)
+            if (newPostCards.isEmpty()) _uiState.value = UiState.ShowingNoPostsMessage
+            else _uiState.value = UiState.ShowingPosts(newPostCards)
         }
     }
 
@@ -96,7 +94,7 @@ class HomeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             postsRepository.addPost(post)
             _scrollUpEvent.emit(true)
-            getPostCards()
+            composeAndShowPostCards()
         }
     }
 
