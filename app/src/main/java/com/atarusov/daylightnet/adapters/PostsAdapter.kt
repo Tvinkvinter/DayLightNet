@@ -34,7 +34,7 @@ class PostsAdapter(
     var postCards: List<PostCard> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
-            val newList = value.sortedByDescending { it.post.timestamp }
+            val newList = value
             val diffUtil = PostCardsDiffUtil(field, newList)
             val diffResults = DiffUtil.calculateDiff(diffUtil)
             field = newList

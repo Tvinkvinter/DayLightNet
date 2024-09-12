@@ -3,6 +3,7 @@ package com.atarusov.daylightnet.data
 import android.util.Log
 import com.atarusov.daylightnet.model.Post
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,19 +18,20 @@ class PostsRemoteDataSource {
     val posts: StateFlow<List<Post>?> = _posts
 
     init {
-        firestore.collection("posts").addSnapshotListener { value, error ->
-            Log.d(TAG, "Attempt to retrieve posts from firestore")
-            if (error != null) {
-                Log.e(TAG, "Error retrieving posts", error)
-                return@addSnapshotListener
+        firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { value, error ->
+                Log.d(TAG, "Attempt to retrieve posts from firestore")
+                if (error != null) {
+                    Log.e(TAG, "Error retrieving posts", error)
+                    return@addSnapshotListener
+                }
+
+                Log.d(TAG, "Posts retrieved successfully")
+                val posts = value?.documents?.mapNotNull { it.toObject<Post>() } ?: emptyList()
+                _posts.value = posts
+
+                if (posts.isEmpty()) Log.w(TAG, "List of posts is empty")
             }
-
-            Log.d(TAG, "Posts retrieved successfully")
-            val posts = value?.documents?.mapNotNull { it.toObject<Post>() } ?: emptyList()
-            _posts.value = posts
-
-            if (posts.isEmpty()) Log.w(TAG, "List of posts is empty")
-        }
     }
 
     suspend fun addOrUpdatePost(post: Post): Result<String> {
