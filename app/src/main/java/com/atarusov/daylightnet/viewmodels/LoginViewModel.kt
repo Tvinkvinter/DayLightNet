@@ -43,16 +43,6 @@ class LoginViewModel(
     private val _authErrorSharedFlow = MutableSharedFlow<Exception>()
     val authErrorSharedFlow: SharedFlow<Exception> = _authErrorSharedFlow
 
-    var currentUserData: User? = null
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            usersRepository.currentUserId.collect {
-                currentUserData = usersRepository.getCurrentUserDataOrNull()
-            }
-        }
-    }
-
     fun signInWithEmailAndPassword(loginData: User.LoginData) {
 
         _validationStateFlow.value = LogInValidationState(

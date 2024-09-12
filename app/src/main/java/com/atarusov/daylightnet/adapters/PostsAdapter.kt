@@ -29,8 +29,7 @@ class PostsAdapter(
         val binding: PostItemBinding
     ) : RecyclerView.ViewHolder(binding.root)
 
-    private val firebaseAuth = FirebaseAuth.getInstance()
-    private val database = Firebase.firestore
+    var currentUserId: String? = null
 
     var postCards: List<PostCard> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
@@ -73,7 +72,7 @@ class PostsAdapter(
 
     override fun getItemCount(): Int = postCards.size
 
-    fun isPostLiked(post: Post) = post.idsOfUsersLiked.contains(firebaseAuth.uid)
+    fun isPostLiked(post: Post) = post.idsOfUsersLiked.contains(currentUserId)
 
     fun setLikeButtonColor(button: MaterialButton, isPostLiked: Boolean) {
         val button_color: ColorStateList

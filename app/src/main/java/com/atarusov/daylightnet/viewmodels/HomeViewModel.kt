@@ -28,7 +28,8 @@ class HomeViewModel(
 ) : ViewModel() {
 
     val posts: StateFlow<List<Post>> = postsRepository.posts
-    var currentUserData: User? = null
+    val users: StateFlow<List<User>> = usersRepository.users
+    var currentUserId: StateFlow<String?> = usersRepository.currentUserId
 
     private val _postCards = MutableStateFlow<List<PostCard>>(emptyList())
     val postCards: StateFlow<List<PostCard>> = _postCards
@@ -41,19 +42,11 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-            posts.first { it.isNotEmpty() }
+            _isLoading.value = true
+            posts.first { it != null }
+            users.first { it.isNotEmpty() }
             getPostCards()
-        }
-
-        viewModelScope.launch(Dispatchers.Main) {
-            usersRepository.currentUserId.collect {
-
-                val userData = withContext(Dispatchers.IO) {
-                    usersRepository.getCurrentUserDataOrNull()
-                }
-
-                currentUserData = userData
-            }
+            _isLoading.value = false
         }
     }
 
@@ -62,28 +55,26 @@ class HomeViewModel(
             _isLoading.value = true
 
             val newPostCards = mutableListOf<PostCard>()
+            posts.value?.let { posts ->
+                for (post in posts) {
+                    val author = users.value.find { it.uid == post.userId }
 
-            for (post in posts.value) {
-                val author = withContext(Dispatchers.IO) {
-                    usersRepository.getUserDataOrNullById(post.userId)
+                    if (author != null) newPostCards.add(PostCard(post, author))
                 }
 
-                if (author != null) newPostCards.add(PostCard(post, author))
+                _postCards.value = newPostCards
             }
 
-            _postCards.value = newPostCards
-
-            _isLoading.value = false
         }
     }
 
     fun handleLikeButtonClick(postCard: PostCard) {
-        currentUserData?.let { user ->
+        currentUserId.value?.let { id ->
             viewModelScope.launch(Dispatchers.IO) {
-                val result = if (postCard.post.idsOfUsersLiked.contains(user.uid)) {
-                    postsRepository.unlikePost(postCard.post, user.uid)
+                val result = if (postCard.post.idsOfUsersLiked.contains(id)) {
+                    postsRepository.unlikePost(postCard.post, id)
                 } else {
-                    postsRepository.likePost(postCard.post, user.uid)
+                    postsRepository.likePost(postCard.post, id)
                 }
 
                 if (result.isFailure)
@@ -101,9 +92,9 @@ class HomeViewModel(
     }
 
     fun addTestPost() {
-        val test_post = currentUserData?.let {
+        val test_post = currentUserId.value?.let {
             Post(
-                userId = it.uid,
+                userId = it,
                 content = "teeeest",
             )
         }

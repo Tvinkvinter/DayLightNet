@@ -41,6 +41,12 @@ class HomeFragment : Fragment() {
         }
 
         lifecycleScope.launch {
+            viewModel.currentUserId.collectLatest { currentUserId ->
+                (binding.postsRw.adapter as PostsAdapter).currentUserId = currentUserId
+            }
+        }
+
+        lifecycleScope.launch {
             viewModel.postCards.collectLatest { postCards ->
                 (binding.postsRw.adapter as PostsAdapter).postCards = postCards
             }
