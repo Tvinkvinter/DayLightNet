@@ -8,34 +8,33 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.atarusov.App
+import com.atarusov.daylightnet.data.PostCardsRepository
 import com.atarusov.daylightnet.data.PostsRepository
 import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.Post
 import com.atarusov.daylightnet.model.PostCard
-import com.atarusov.daylightnet.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class HomeViewModel(
     private val postsRepository: PostsRepository,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val postCardsRepository: PostCardsRepository,
 ) : ViewModel() {
 
     sealed class UiState {
         object Loading : UiState()
-        data class ShowingPosts(val postCards: List<PostCard>) : UiState()
+        data class ShowingPostCards(val postCards: List<PostCard>) : UiState()
         object ShowingNoPostsMessage : UiState()
     }
 
-    val posts: StateFlow<List<Post>?> = postsRepository.posts
-    val users: StateFlow<List<User>> = usersRepository.users
-    var currentUserId: StateFlow<String?> = usersRepository.currentUserId
+    val currentUserId: StateFlow<String?> = usersRepository.currentUserId
+    val postCards: StateFlow<List<PostCard>> = postCardsRepository.postCards
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState: StateFlow<UiState> = _uiState
@@ -47,45 +46,47 @@ class HomeViewModel(
     val errorSharedFlow: SharedFlow<Exception> = _errorSharedFlow
 
     init {
+        loadPostCards()
+    }
+
+    private fun showLoadingAnim() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            posts.first { it != null }
-            users.first { it.isNotEmpty() }
-            composeAndShowPostCards()
         }
     }
 
-    fun composeAndShowPostCards() {
-        Log.d(TAG, "getPostCards()")
+    private fun showPostCards() {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            val newPostCards = mutableListOf<PostCard>()
-            posts.value?.let { posts ->
-                for (post in posts) {
-                    val author = users.value.find { it.uid == post.userId }
+            _uiState.value = UiState.ShowingPostCards(postCards.value)
+            _scrollUpEvent.emit(true)
+        }
+    }
 
-                    if (author != null) newPostCards.add(PostCard(post, author))
-                }
-            }
+    private fun showNoPostsMessage() {
+        viewModelScope.launch {
+            _uiState.value = UiState.ShowingNoPostsMessage
+        }
+    }
 
-            if (newPostCards.isEmpty()) _uiState.value = UiState.ShowingNoPostsMessage
-            else _uiState.value = UiState.ShowingPosts(newPostCards)
+    fun loadPostCards() {
+        viewModelScope.launch(Dispatchers.Main) {
+            postCardsRepository.getPostCards()
+            if (postCards.value.isEmpty()) showNoPostsMessage()
+            else showPostCards()
         }
     }
 
     fun handleLikeButtonClick(postCard: PostCard) {
-        currentUserId.value?.let { id ->
-            viewModelScope.launch(Dispatchers.IO) {
-                val result = if (postCard.post.idsOfUsersLiked.contains(id)) {
-                    postsRepository.unlikePost(postCard.post, id)
-                } else {
-                    postsRepository.likePost(postCard.post, id)
-                }
-
-                if (result.isFailure)
-                    withContext(Dispatchers.Main) {
-                        _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
-                    }
+        val isActionLike =
+            !postCard.post.idsOfUsersLiked.contains(usersRepository.currentUserId.value)
+        viewModelScope.launch {
+            val result = postCardsRepository.likeOrUnlikePostCard(postCard, isActionLike) {
+                showPostCards()
+            }
+            if(result.isFailure) {
+                _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
+                // Synchronization with firestore
+                loadPostCards()
             }
         }
     }
@@ -93,8 +94,9 @@ class HomeViewModel(
     fun addPost(post: Post) {
         viewModelScope.launch(Dispatchers.IO) {
             postsRepository.addPost(post)
-            _scrollUpEvent.emit(true)
-            composeAndShowPostCards()
+            withContext(Dispatchers.Main) {
+                loadPostCards()
+            }
         }
     }
 
@@ -119,11 +121,15 @@ class HomeViewModel(
             initializer {
                 val postsRepository = (this[APPLICATION_KEY] as App).postsRepository
                 val usersRepository = (this[APPLICATION_KEY] as App).usersRepository
+                val postCardsRepository = (this[APPLICATION_KEY] as App).postCardsRepository
                 HomeViewModel(
                     postsRepository = postsRepository,
-                    usersRepository = usersRepository
+                    usersRepository = usersRepository,
+                    postCardsRepository = postCardsRepository,
                 )
             }
         }
+
+        val TAG = HomeViewModel::class.java.simpleName
     }
 }

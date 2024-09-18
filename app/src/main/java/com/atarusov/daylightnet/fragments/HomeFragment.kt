@@ -11,14 +11,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.adapters.PostsAdapter
 import com.atarusov.daylightnet.databinding.FragmentHomeBinding
+import com.atarusov.daylightnet.model.Post
 import com.atarusov.daylightnet.model.PostCard
 import com.atarusov.daylightnet.viewmodels.HomeViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.firestore.FirebaseFirestoreException
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
@@ -35,6 +34,7 @@ class HomeFragment : Fragment() {
         binding.postsRw.adapter = PostsAdapter(requireContext()) { postCard: PostCard ->
             viewModel.handleLikeButtonClick(postCard)
         }
+
         binding.postsRw.layoutManager = LinearLayoutManager(requireContext())
 
         binding.addPostBtn.setOnClickListener {
@@ -42,17 +42,11 @@ class HomeFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewModel.currentUserId.collectLatest { currentUserId ->
-                (binding.postsRw.adapter as PostsAdapter).currentUserId = currentUserId
-            }
-        }
-
-        lifecycleScope.launch {
             viewModel.uiState.collect() { state ->
                 when (state) {
                     is HomeViewModel.UiState.Loading -> setLoadingState()
                     is HomeViewModel.UiState.ShowingNoPostsMessage -> setShowingNoPostsMessageState()
-                    is HomeViewModel.UiState.ShowingPosts -> setShowingPostsState(state.postCards)
+                    is HomeViewModel.UiState.ShowingPostCards -> setShowingPostsState(state.postCards)
                 }
             }
         }

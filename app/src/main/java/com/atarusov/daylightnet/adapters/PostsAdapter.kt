@@ -1,9 +1,9 @@
 package com.atarusov.daylightnet.adapters
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.icu.text.SimpleDateFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -29,15 +29,11 @@ class PostsAdapter(
         val binding: PostItemBinding
     ) : RecyclerView.ViewHolder(binding.root)
 
-    var currentUserId: String? = null
-
     var postCards: List<PostCard> = emptyList()
-        @SuppressLint("NotifyDataSetChanged")
         set(value) {
-            val newList = value
-            val diffUtil = PostCardsDiffUtil(field, newList)
+            val diffUtil = PostCardsDiffUtil(field, value)
             val diffResults = DiffUtil.calculateDiff(diffUtil)
-            field = newList
+            field = value
             diffResults.dispatchUpdatesTo(this)
         }
 
@@ -52,27 +48,22 @@ class PostsAdapter(
 
     override fun onBindViewHolder(holder: PostsViewHolder, position: Int) {
         val postCard = postCards[position]
-
         holder.binding.authorNameTv.text = context.getString(
             R.string.profile_username, postCard.author.firstName, postCard.author.lastName
         )
 
         holder.binding.timestampTv.text =
-            getFormattedDateString(postCard.post.timestamp, "dd/MM/yyyy HH:mm")
+            getFormattedDateString(postCard.post.timestamp, "dd/MM/yyyy HH:mm:ss")
         holder.binding.contentTv.text = postCard.post.content
         holder.binding.likeBtn.text = postCard.post.likes.toString()
-        setLikeButtonColor(holder.binding.likeBtn, isPostLiked(postCard.post))
+        setLikeButtonColor(holder.binding.likeBtn, postCard.isLikedByCurrentUser)
 
         holder.binding.likeBtn.setOnClickListener {
             onLikeButtonClick(postCard)
-            setLikeButtonColor(it as MaterialButton, isPostLiked(postCard.post))
-            notifyItemChanged(position)
         }
     }
 
     override fun getItemCount(): Int = postCards.size
-
-    fun isPostLiked(post: Post) = post.idsOfUsersLiked.contains(currentUserId)
 
     fun setLikeButtonColor(button: MaterialButton, isPostLiked: Boolean) {
         val button_color: ColorStateList
@@ -107,7 +98,7 @@ class PostsAdapter(
             return when {
                 oldList[oldItemPosition].post.content != newList[newItemPosition].post.content -> false
                 oldList[oldItemPosition].post.timestamp != newList[newItemPosition].post.timestamp -> false
-                oldList[oldItemPosition].post.likes != newList[newItemPosition].post.likes -> false
+                oldList[oldItemPosition].post.idsOfUsersLiked != newList[newItemPosition].post.idsOfUsersLiked -> false
 
                 oldList[oldItemPosition].author.firstName != newList[newItemPosition].author.firstName -> false
                 oldList[oldItemPosition].author.lastName != newList[newItemPosition].author.lastName -> false

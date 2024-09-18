@@ -14,24 +14,24 @@ import kotlinx.coroutines.tasks.await
 class PostsRemoteDataSource {
     private val firestore = Firebase.firestore
 
-    private val _posts = MutableStateFlow<List<Post>?>(null)
-    val posts: StateFlow<List<Post>?> = _posts
+    private val _posts = MutableStateFlow<List<Post>>(emptyList())
+    val posts: StateFlow<List<Post>> = _posts
 
-    init {
-        firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { value, error ->
-                Log.d(TAG, "Attempt to retrieve posts from firestore")
-                if (error != null) {
-                    Log.e(TAG, "Error retrieving posts", error)
-                    return@addSnapshotListener
-                }
-
-                Log.d(TAG, "Posts retrieved successfully")
-                val posts = value?.documents?.mapNotNull { it.toObject<Post>() } ?: emptyList()
-                _posts.value = posts
-
-                if (posts.isEmpty()) Log.w(TAG, "List of posts is empty")
+    suspend fun fetchAllPosts(): Result<String> {
+        return try {
+            val querySnapshot = firestore.collection("posts")
+                .orderBy("timestamp", Query.Direction.DESCENDING).get().await()
+            _posts.value = querySnapshot.documents.mapNotNull { document ->
+                document.toObject<Post>()
             }
+            Result.success("${_posts.value.size} posts fetched from firestore").also {
+                Log.d(TAG, it.toString())
+            }
+        } catch (e: Exception) {
+            Result.failure<String>(e).also {
+                Log.e(TAG, "Error fetching posts from firestore", e)
+            }
+        }
     }
 
     suspend fun addOrUpdatePost(post: Post): Result<String> {

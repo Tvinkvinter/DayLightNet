@@ -8,7 +8,6 @@ class UsersRepository(
     private val usersRemoteDataSource: UsersRemoteDataSource,
     private val authManager: AuthManager
 ) {
-    val users: StateFlow<List<User>> = usersRemoteDataSource.users
     val currentUserId: StateFlow<String?> = authManager.current_user_id
 
     suspend fun getUserDataOrNullById(userId: String): User? {

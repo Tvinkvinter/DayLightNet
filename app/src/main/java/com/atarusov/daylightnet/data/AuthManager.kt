@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
 
 object AuthManager {
-    val TAG = AuthManager.javaClass.simpleName//Class.forName("AuthManager").kotlin.simpleName
+    val TAG = AuthManager.javaClass.simpleName
 
     val firebaseAuth = Firebase.auth
 
