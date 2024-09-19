@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.adapters.PostsAdapter
 import com.atarusov.daylightnet.databinding.FragmentHomeBinding
-import com.atarusov.daylightnet.model.Post
 import com.atarusov.daylightnet.model.PostCard
 import com.atarusov.daylightnet.viewmodels.HomeViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -22,7 +21,7 @@ import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
-    lateinit var binding: FragmentHomeBinding
+    private lateinit var binding: FragmentHomeBinding
     private val viewModel: HomeViewModel by viewModels { HomeViewModel.Factory }
 
     override fun onCreateView(
@@ -39,6 +38,13 @@ class HomeFragment : Fragment() {
 
         binding.addPostBtn.setOnClickListener {
             viewModel.addTestPost()
+        }
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.loadAndShowPostCards(true){
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
+
         }
 
         lifecycleScope.launch {
@@ -74,7 +80,7 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    fun setLoadingState() {
+    private fun setLoadingState() {
         binding.loadingAnim.visibility = View.VISIBLE
         binding.loadingAnim.setMinFrame(0)
         binding.loadingAnim.setMaxFrame(102)
@@ -84,7 +90,7 @@ class HomeFragment : Fragment() {
         binding.addPostBtn.visibility = View.GONE
     }
 
-    fun setShowingNoPostsMessageState() {
+    private fun setShowingNoPostsMessageState() {
         binding.noPostsTv.visibility = View.VISIBLE
         binding.addPostBtn.visibility = View.VISIBLE
 
@@ -93,7 +99,7 @@ class HomeFragment : Fragment() {
         binding.loadingAnim.pauseAnimation()
     }
 
-    fun setShowingPostsState(postCards: List<PostCard>) {
+    private fun setShowingPostsState(postCards: List<PostCard>) {
         (binding.postsRw.adapter as PostsAdapter).postCards = postCards
         binding.postsRw.visibility = View.VISIBLE
         binding.addPostBtn.visibility = View.VISIBLE

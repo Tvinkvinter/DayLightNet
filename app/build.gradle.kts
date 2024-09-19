@@ -64,4 +64,5 @@ dependencies {
     implementation(libs.firebase.analytics)
 
     implementation(libs.lottie)
+    implementation(libs.androidx.swiperefreshlayout)
 }
