@@ -45,7 +45,7 @@ class HomeViewModel(
     val errorSharedFlow: SharedFlow<Exception> = _errorSharedFlow
 
     init {
-        loadPostCards()
+        loadAndShowPostCards(true)
     }
 
     private fun showLoadingAnim() {
@@ -57,7 +57,6 @@ class HomeViewModel(
     private fun showPostCards() {
         viewModelScope.launch {
             _uiState.value = UiState.ShowingPostCards(postCards.value)
-            _scrollUpEvent.emit(true)
         }
     }
 
@@ -67,11 +66,21 @@ class HomeViewModel(
         }
     }
 
-    fun loadPostCards() {
+    private fun scrollUpPage() {
+        viewModelScope.launch {
+            _scrollUpEvent.emit(true)
+        }
+    }
+
+    fun loadAndShowPostCards(withScrollUp: Boolean, onFinishListener: (() -> Unit)? = null) {
         viewModelScope.launch(Dispatchers.Main) {
             postCardsRepository.getPostCards()
             if (postCards.value.isEmpty()) showNoPostsMessage()
-            else showPostCards()
+            else {
+                showPostCards()
+                if (withScrollUp) scrollUpPage()
+            }
+            if (onFinishListener != null) onFinishListener()
         }
     }
 
@@ -85,7 +94,7 @@ class HomeViewModel(
             if (result.isFailure) {
                 _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
                 // Synchronization with firestore
-                loadPostCards()
+                loadAndShowPostCards(false)
             }
         }
     }
@@ -94,7 +103,7 @@ class HomeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             postsRepository.addPost(post)
             withContext(Dispatchers.Main) {
-                loadPostCards()
+                loadAndShowPostCards(true)
             }
         }
     }
