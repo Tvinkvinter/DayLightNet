@@ -1,6 +1,5 @@
 package com.atarusov.daylightnet.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -28,9 +27,9 @@ class HomeViewModel(
 ) : ViewModel() {
 
     sealed class UiState {
-        object Loading : UiState()
+        data object Loading : UiState()
         data class ShowingPostCards(val postCards: List<PostCard>) : UiState()
-        object ShowingNoPostsMessage : UiState()
+        data object ShowingNoPostsMessage : UiState()
     }
 
     val currentUserId: StateFlow<String?> = usersRepository.currentUserId
@@ -83,7 +82,7 @@ class HomeViewModel(
             val result = postCardsRepository.likeOrUnlikePostCard(postCard, isActionLike) {
                 showPostCards()
             }
-            if(result.isFailure) {
+            if (result.isFailure) {
                 _errorSharedFlow.emit(result.exceptionOrNull() as Exception)
                 // Synchronization with firestore
                 loadPostCards()
@@ -110,9 +109,6 @@ class HomeViewModel(
 
         if (test_post != null) {
             addPost(test_post)
-        } else {
-            // TODO() проработать логи и ошибки
-            Log.i("Posts", "Error")
         }
     }
 
@@ -129,7 +125,5 @@ class HomeViewModel(
                 )
             }
         }
-
-        val TAG = HomeViewModel::class.java.simpleName
     }
 }
