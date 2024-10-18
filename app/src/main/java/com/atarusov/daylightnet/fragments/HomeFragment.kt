@@ -37,11 +37,13 @@ class HomeFragment : Fragment() {
         binding.postsRw.layoutManager = LinearLayoutManager(requireContext())
 
         binding.addPostBtn.setOnClickListener {
-            viewModel.addTestPost()
+            NewPostDialogFragment { text ->
+                viewModel.addPost(text)
+            }.show(parentFragmentManager, "NEW_POST_DIALOG")
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.loadAndShowPostCards(true){
+            viewModel.loadAndShowPostCards(true) {
                 binding.swipeRefreshLayout.isRefreshing = false
             }
 
@@ -107,9 +109,5 @@ class HomeFragment : Fragment() {
         binding.noPostsTv.visibility = View.GONE
         binding.loadingAnim.visibility = View.GONE
         binding.loadingAnim.pauseAnimation()
-    }
-
-    companion object {
-        fun newInstance() = HomeFragment()
     }
 }

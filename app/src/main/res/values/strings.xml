@@ -25,13 +25,6 @@
     <string name="register_hint_repeat_password">Repeat password</string>
     <string name="register_button_sign_up">Sign Up</string>
 
-    <!-- TextInputField errors -->
-    <string name="tif_email_error">Invalid email</string>
-    <string name="tif_password_error">Password needs to be at least 6 characters</string>
-    <string name="tif_repeat_password_error">Passwords don\'t match</string>
-    <string name="tif_first_name_error">First name should not be empty</string>
-    <string name="tif_last_name_error">Last name should not be empty</string>
-
     <!-- Profile screen -->
     <string name="profile_username">%s %s</string>
     <string name="profile_menu_item_settings">Settings</string>
@@ -42,7 +35,20 @@
     <!-- Home screen -->
     <string name="home_no_posts_message">There are no posts yet\nCreate the first one!</string>
 
+    <!-- New Post Dialog -->
+    <string name="new_post_title">Create a new post</string>
+    <string name="new_post_hint">Text something here</string>
+    <string name="new_post_button_publish">Publish</string>
+    <string name="new_post_button_cancel">Cancel</string>
+
     <!-- Error messages -->
+    <!-- TextInputField errors -->
+    <string name="tif_email_error">Invalid email</string>
+    <string name="tif_password_error">Password needs to be at least 6 characters</string>
+    <string name="tif_repeat_password_error">Passwords don\'t match</string>
+    <string name="tif_first_name_error">First name should not be empty</string>
+    <string name="tif_last_name_error">Last name should not be empty</string>
+
     <!-- common -->
     <string name="error_too_many_requests">Too many requests. Please try again later</string>
     <string name="error_network_request_failed">It seems you are offline. Please check your internet connection</string>

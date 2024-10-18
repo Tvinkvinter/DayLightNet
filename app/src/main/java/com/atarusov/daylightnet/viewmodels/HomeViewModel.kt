@@ -99,25 +99,25 @@ class HomeViewModel(
         }
     }
 
-    fun addPost(post: Post) {
-        viewModelScope.launch(Dispatchers.IO) {
-            postsRepository.addPost(post)
-            withContext(Dispatchers.Main) {
-                loadAndShowPostCards(true)
-            }
-        }
-    }
-
-    fun addTestPost() {
-        val test_post = currentUserId.value?.let {
+    fun addPost(text: String) {
+        val newPost = currentUserId.value?.let {
             Post(
                 userId = it,
-                content = "teeeest",
+                content = text
             )
         }
 
-        if (test_post != null) {
-            addPost(test_post)
+        showLoadingAnim()
+        viewModelScope.launch(Dispatchers.IO) {
+            if (newPost != null) {
+                postsRepository.addPost(newPost)
+                withContext(Dispatchers.Main) {
+                    loadAndShowPostCards(true)
+                }
+            } else {
+                // emitting unexpected exception
+                _errorSharedFlow.emit(Exception())
+            }
         }
     }
 
