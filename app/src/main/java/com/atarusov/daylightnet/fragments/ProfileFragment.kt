@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.databinding.FragmentProfileBinding
@@ -20,7 +22,7 @@ import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
-    lateinit var binding: FragmentProfileBinding
+    private lateinit var binding: FragmentProfileBinding
     private val viewModel: ProfileViewModel by viewModels { ProfileViewModel.Factory }
 
     override fun onCreateView(
@@ -30,52 +32,62 @@ class ProfileFragment : Fragment() {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
 
 
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         binding.btnLogOut.setOnClickListener {
             viewModel.signOut()
         }
 
-        lifecycleScope.launch {
-            viewModel.currentUserData.collect { userData ->
-                userData?.let { setViewsByCurrentUserData(it) }
-            }
-        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.currentUserData.collect { userData ->
+                        userData?.let { setViewsByCurrentUserData(it) }
+                    }
+                }
 
-        lifecycleScope.launch {
-            viewModel.navigationEvent.collect { navigationEvent ->
-                when (navigationEvent) {
-                    ProfileViewModel.NavigationEvent.NavigateToLoginScreen ->
-                        findNavController().navigate(R.id.loginFragment)
+                launch {
+                    viewModel.navigationEvent.collect { navigationEvent ->
+                        when (navigationEvent) {
+                            ProfileViewModel.NavigationEvent.NavigateToLoginScreen ->
+                                findNavController().navigate(R.id.loginFragment)
 
-                    ProfileViewModel.NavigationEvent.NavigateBack ->
-                        findNavController().navigateUp()
+                            ProfileViewModel.NavigationEvent.NavigateBack ->
+                                findNavController().navigateUp()
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.signOutErrorSharedFlow.collect { e ->
+                        val errorMessage: String =
+                            when {
+                                e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.CANCELLED ->
+                                    getString(R.string.error_request_was_cancelled)
+
+                                e is FirebaseTooManyRequestsException ->
+                                    getString(R.string.error_too_many_requests)
+
+                                e is FirebaseNetworkException ->
+                                    getString(R.string.error_network_request_failed)
+
+                                else -> getString(R.string.error_unexpected)
+                            }
+                        Snackbar.make(requireView(), errorMessage, Snackbar.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
-
-        lifecycleScope.launch {
-            viewModel.signOutErrorSharedFlow.collect { e ->
-                val error_message: String
-                if (e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.CANCELLED)
-                    error_message = getString(R.string.error_request_was_cancelled)
-                else if (e is FirebaseTooManyRequestsException)
-                    error_message = getString(R.string.error_too_many_requests)
-                else if (e is FirebaseNetworkException)
-                    error_message = getString(R.string.error_network_request_failed)
-                else error_message = getString(R.string.error_unexpected)
-                Snackbar.make(requireView(), error_message, Snackbar.LENGTH_SHORT).show()
-            }
-        }
-
-        return binding.root
     }
 
-    fun setViewsByCurrentUserData(user: User) {
-        with(binding) {
-            binding.userNameTv.text =
-                getString(R.string.profile_username, user.firstName, user.lastName)
-
-            if (user.additionalInfo != null)
-                binding.userAdditionalInfoTv.text = user.additionalInfo
-        }
+    private fun setViewsByCurrentUserData(user: User) {
+        binding.userNameTv.text =
+            getString(R.string.profile_username, user.firstName, user.lastName)
+        if (user.additionalInfo != null)
+            binding.userAdditionalInfoTv.text = user.additionalInfo
     }
 }
