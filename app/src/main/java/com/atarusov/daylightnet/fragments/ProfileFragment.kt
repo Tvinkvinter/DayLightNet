@@ -1,5 +1,6 @@
 package com.atarusov.daylightnet.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.atarusov.appComponent
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.databinding.FragmentProfileBinding
 import com.atarusov.daylightnet.model.User
@@ -19,11 +21,20 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class ProfileFragment : Fragment() {
 
     private lateinit var binding: FragmentProfileBinding
-    private val viewModel: ProfileViewModel by viewModels { ProfileViewModel.Factory }
+
+    @Inject
+    lateinit var factory: ProfileViewModel.Factory
+    private val viewModel: ProfileViewModel by viewModels { factory }
+
+    override fun onAttach(context: Context) {
+        context.appComponent.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

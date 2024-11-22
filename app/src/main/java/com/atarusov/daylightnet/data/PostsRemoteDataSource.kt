@@ -2,17 +2,17 @@ package com.atarusov.daylightnet.data
 
 import android.util.Log
 import com.atarusov.daylightnet.model.Post
-import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
-
-class PostsRemoteDataSource {
-    private val firestore = Firebase.firestore
+@Singleton
+class PostsRemoteDataSource @Inject constructor(private val firestore: FirebaseFirestore) {
 
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
     val posts: StateFlow<List<Post>> = _posts

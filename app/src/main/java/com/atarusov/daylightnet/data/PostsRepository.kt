@@ -2,8 +2,11 @@ package com.atarusov.daylightnet.data
 
 import com.atarusov.daylightnet.model.Post
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class PostsRepository(
+@Singleton
+class PostsRepository @Inject constructor(
     private val postsRemoteDataSource: PostsRemoteDataSource
 ) {
     val posts: StateFlow<List<Post>> = postsRemoteDataSource.posts

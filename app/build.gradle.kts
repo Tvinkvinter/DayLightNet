@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
     id("com.google.gms.google-services")
 }
 
@@ -40,7 +41,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -63,6 +63,11 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
 
+    // Dependency injection
+    implementation(libs.dagger)
+    kapt(libs.dagger.compiler)
+
+    // Other
     implementation(libs.lottie)
     implementation(libs.androidx.swiperefreshlayout)
 }

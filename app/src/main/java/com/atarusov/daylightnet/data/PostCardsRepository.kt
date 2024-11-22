@@ -7,8 +7,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class PostCardsRepository(
+@Singleton
+class PostCardsRepository @Inject constructor(
     private val postsRepository: PostsRepository,
     private val usersRepository: UsersRepository
 ) {

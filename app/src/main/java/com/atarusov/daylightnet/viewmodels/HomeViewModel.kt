@@ -2,11 +2,7 @@ package com.atarusov.daylightnet.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.atarusov.App
 import com.atarusov.daylightnet.data.PostCardsRepository
 import com.atarusov.daylightnet.data.PostsRepository
 import com.atarusov.daylightnet.data.UsersRepository
@@ -19,6 +15,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 class HomeViewModel(
     private val postsRepository: PostsRepository,
@@ -121,18 +118,16 @@ class HomeViewModel(
         }
     }
 
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val postsRepository = (this[APPLICATION_KEY] as App).postsRepository
-                val usersRepository = (this[APPLICATION_KEY] as App).usersRepository
-                val postCardsRepository = (this[APPLICATION_KEY] as App).postCardsRepository
-                HomeViewModel(
-                    postsRepository = postsRepository,
-                    usersRepository = usersRepository,
-                    postCardsRepository = postCardsRepository,
-                )
+    class Factory @Inject constructor(
+        private val postsRepository: PostsRepository,
+        private val usersRepository: UsersRepository,
+        private val postCardsRepository: PostCardsRepository
+    ) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass == HomeViewModel::class.java) {
+                return HomeViewModel(postsRepository, usersRepository, postCardsRepository) as T
             }
+            throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }
 }

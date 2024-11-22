@@ -3,8 +3,11 @@ package com.atarusov.daylightnet.data
 import android.util.Log
 import com.atarusov.daylightnet.model.User
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class UsersRepository(
+@Singleton
+class UsersRepository @Inject constructor(
     private val usersRemoteDataSource: UsersRemoteDataSource,
     private val authManager: AuthManager
 ) {
@@ -31,7 +34,10 @@ class UsersRepository(
         val user_id = currentUserId.value
         val delete_account_result = authManager.deleteCurrentUser()
         if (delete_account_result.isSuccess) user_id?.let { usersRemoteDataSource.deleteUserById(it) }
-        else Log.d(TAG, "User account hasn't been deleted, so data deleting process is not started ")
+        else Log.d(
+            TAG,
+            "User account hasn't been deleted, so data deleting process is not started "
+        )
 
         return delete_account_result
     }

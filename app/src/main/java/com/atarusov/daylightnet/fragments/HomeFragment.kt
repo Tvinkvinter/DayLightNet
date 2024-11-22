@@ -1,5 +1,6 @@
 package com.atarusov.daylightnet.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.atarusov.appComponent
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.adapters.PostsAdapter
 import com.atarusov.daylightnet.databinding.FragmentHomeBinding
@@ -18,11 +20,20 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
-    private val viewModel: HomeViewModel by viewModels { HomeViewModel.Factory }
+
+    @Inject
+    lateinit var factory: HomeViewModel.Factory
+    private val viewModel: HomeViewModel by viewModels { factory }
+
+    override fun onAttach(context: Context) {
+        context.appComponent.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

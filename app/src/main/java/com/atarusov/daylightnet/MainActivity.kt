@@ -8,17 +8,24 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.atarusov.appComponent
 import com.atarusov.daylightnet.databinding.ActivityMainBinding
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.FirebaseAuth
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
+
+    //TODO don't use firebaseAuth here
+    @Inject
+    lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        applicationContext.appComponent.inject(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -42,7 +49,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val currentUser = Firebase.auth.currentUser
+        val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
             navController.navigate(R.id.bottomNavFragments)
         }

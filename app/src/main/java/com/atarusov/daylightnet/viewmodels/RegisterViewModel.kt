@@ -2,11 +2,7 @@ package com.atarusov.daylightnet.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.atarusov.App
 import com.atarusov.daylightnet.data.UsersRepository
 import com.atarusov.daylightnet.model.User
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 data class RegisterValidationState(
     val isFirstNameValid: Boolean = true,
@@ -139,14 +136,13 @@ class RegisterViewModel(
         }
     }
 
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val usersRepository = (this[APPLICATION_KEY] as App).usersRepository
-                RegisterViewModel(
-                    usersRepository = usersRepository
-                )
+    class Factory @Inject constructor(private val usersRepository: UsersRepository) :
+        ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass == RegisterViewModel::class.java) {
+                return RegisterViewModel(usersRepository) as T
             }
+            throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }
 }

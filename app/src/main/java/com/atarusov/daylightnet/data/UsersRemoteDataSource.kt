@@ -1,19 +1,14 @@
 package com.atarusov.daylightnet.data
 
 import android.util.Log
-import com.atarusov.daylightnet.data.PostsRemoteDataSource.Companion
-import com.atarusov.daylightnet.model.Post
 import com.atarusov.daylightnet.model.User
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class UsersRemoteDataSource {
-    private val firestore = Firebase.firestore
+@Singleton
+class UsersRemoteDataSource @Inject constructor(private val firestore: FirebaseFirestore) {
 
     suspend fun addOrUpdateUser(user: User): Result<String> {
         return try {

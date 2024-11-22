@@ -1,16 +1,16 @@
 package com.atarusov.daylightnet.data
 
 import android.util.Log
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object AuthManager {
-    val TAG = AuthManager.javaClass.simpleName
-
-    val firebaseAuth = Firebase.auth
+@Singleton
+class AuthManager @Inject constructor(private val firebaseAuth: FirebaseAuth) {
+    val TAG = AuthManager::class.java.simpleName
 
     private val _current_user_id = MutableStateFlow<String?>(null)
     val current_user_id: StateFlow<String?> = _current_user_id

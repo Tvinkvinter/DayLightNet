@@ -1,5 +1,6 @@
 package com.atarusov.daylightnet.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.atarusov.appComponent
 import com.atarusov.daylightnet.R
 import com.atarusov.daylightnet.databinding.FragmentLoginBinding
 import com.atarusov.daylightnet.model.User
@@ -17,11 +19,20 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuthException
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class LoginFragment : Fragment() {
 
-    lateinit var binding: FragmentLoginBinding
-    private val viewModel: LoginViewModel by viewModels { LoginViewModel.Factory }
+    private lateinit var binding: FragmentLoginBinding
+
+    @Inject
+    lateinit var factory: LoginViewModel.Factory
+    private val viewModel: LoginViewModel by viewModels { factory }
+
+    override fun onAttach(context: Context) {
+        context.appComponent.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

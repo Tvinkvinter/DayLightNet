@@ -1,26 +1,22 @@
 package com.atarusov
 
 import android.app.Application
-import com.atarusov.daylightnet.data.AuthManager
-import com.atarusov.daylightnet.data.PostCardsRepository
-import com.atarusov.daylightnet.data.PostsRemoteDataSource
-import com.atarusov.daylightnet.data.PostsRepository
-import com.atarusov.daylightnet.data.UsersRemoteDataSource
-import com.atarusov.daylightnet.data.UsersRepository
+import android.content.Context
+import com.atarusov.daylightnet.di.AppComponent
+import com.atarusov.daylightnet.di.DaggerAppComponent
 
 class App : Application() {
 
-    lateinit var authManager: AuthManager
-    lateinit var usersRepository: UsersRepository
-    lateinit var postsRepository: PostsRepository
-    lateinit var postCardsRepository: PostCardsRepository
+    lateinit var appComponent: AppComponent
 
     override fun onCreate() {
         super.onCreate()
-
-        authManager = AuthManager
-        usersRepository = UsersRepository(UsersRemoteDataSource(), authManager)
-        postsRepository = PostsRepository(PostsRemoteDataSource())
-        postCardsRepository = PostCardsRepository(postsRepository, usersRepository)
+        appComponent = DaggerAppComponent.create()
     }
 }
+
+val Context.appComponent: AppComponent
+    get() = when (this) {
+        is App -> appComponent
+        else -> this.applicationContext.appComponent
+    }
