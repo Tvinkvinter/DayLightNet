@@ -16,7 +16,12 @@ A prototype of a social network aimed at gaining and improving skills of archite
 
 ## Technologies ⚒️
 - AndroidSDK
+- Kotlin
+- XML
+- MVVM
+- Firebase
+- Coroutines
+- Dagger2
 - Navigation Component
 - Custom Dialog
-- Firebase
 - Lottie
