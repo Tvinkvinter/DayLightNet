@@ -9,9 +9,10 @@ import javax.inject.Singleton
 @Singleton
 class UsersRepository @Inject constructor(
     private val usersRemoteDataSource: UsersRemoteDataSource,
+    private val userSessionManager: UserSessionManager,
     private val authManager: AuthManager
 ) {
-    val currentUserId: StateFlow<String?> = authManager.current_user_id
+    val currentUserId: StateFlow<String?> = userSessionManager.current_user_id
 
     suspend fun getUserDataOrNullById(userId: String): User? {
         usersRemoteDataSource.getUserDataOrNullById(userId)
@@ -31,13 +32,14 @@ class UsersRepository @Inject constructor(
     }
 
     suspend fun deleteCurrentUserAccountAndData(): Result<String> {
-        val user_id = currentUserId.value
         val delete_account_result = authManager.deleteCurrentUser()
-        if (delete_account_result.isSuccess) user_id?.let { usersRemoteDataSource.deleteUserById(it) }
-        else Log.d(
-            TAG,
-            "User account hasn't been deleted, so data deleting process is not started "
-        )
+        if (delete_account_result.isSuccess)
+            if (userSessionManager.isUserLoggedIn()) {
+                usersRemoteDataSource.deleteUserById(currentUserId.value.toString())
+            } else Log.d(
+                TAG,
+                "User account hasn't been deleted, so data deleting process is not started "
+            )
 
         return delete_account_result
     }
@@ -49,8 +51,8 @@ class UsersRepository @Inject constructor(
                 Exception("User account hasn't been created, so user data is not added to database")
             )
 
-            currentUserId.value?.let {
-                val user = User(it, firstName, lastName)
+            if (userSessionManager.isUserLoggedIn()) {
+                val user = User(currentUserId.value.toString(), firstName, lastName)
                 add_data_result = addUserData(user)
             }
 
@@ -67,7 +69,7 @@ class UsersRepository @Inject constructor(
     }
 
     suspend fun logOutCurrentUser(): Result<String> {
-        return authManager.logOutCurrentUser()
+        return userSessionManager.logOut()
     }
 
     companion object {
