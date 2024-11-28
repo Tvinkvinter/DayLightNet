@@ -7,10 +7,17 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
-class UsersRemoteDataSource @Inject constructor(private val firestore: FirebaseFirestore) {
+interface UsersRemoteDataSource {
+    suspend fun addOrUpdateUser(user: User): Result<String>
+    suspend fun getUserDataOrNullById(userId: String): User?
+    suspend fun deleteUserById(userId: String): Result<String>
+}
 
-    suspend fun addOrUpdateUser(user: User): Result<String> {
+@Singleton
+class UsersRemoteDataSourceImpl @Inject constructor(private val firestore: FirebaseFirestore) :
+    UsersRemoteDataSource {
+
+    override suspend fun addOrUpdateUser(user: User): Result<String> {
         return try {
             Log.d(TAG, "Attempt to set user with ID ${user.uid} to firestore")
             firestore.collection("users").document(user.uid).set(user).await()
@@ -24,7 +31,7 @@ class UsersRemoteDataSource @Inject constructor(private val firestore: FirebaseF
         }
     }
 
-    suspend fun getUserDataOrNullById(userId: String): User? {
+    override suspend fun getUserDataOrNullById(userId: String): User? {
         Log.d(TAG, "Attempt to retrieve data of user with ID $userId")
         val documentSnapshot = firestore.collection("users").document(userId).get().await()
         if (documentSnapshot.data == null) Log.w(
@@ -34,7 +41,7 @@ class UsersRemoteDataSource @Inject constructor(private val firestore: FirebaseF
         return documentSnapshot.data?.let { User.fromMap(it) }
     }
 
-    suspend fun deleteUserById(userId: String): Result<String> {
+    override suspend fun deleteUserById(userId: String): Result<String> {
         return try {
             Log.d(TAG, "Attempt to delete data of user with ID $userId")
             firestore.collection("users").document(userId).delete().await()

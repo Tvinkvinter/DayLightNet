@@ -11,13 +11,21 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface PostsRemoteDataSource {
+    val posts: StateFlow<List<Post>>
+    suspend fun fetchAllPosts(): Result<String>
+    suspend fun addOrUpdatePost(post: Post): Result<String>
+    suspend fun deletePost(postId: String): Result<String>
+}
+
 @Singleton
-class PostsRemoteDataSource @Inject constructor(private val firestore: FirebaseFirestore) {
+class PostsRemoteDataSourceImpl @Inject constructor(private val firestore: FirebaseFirestore) :
+    PostsRemoteDataSource {
 
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
-    val posts: StateFlow<List<Post>> = _posts
+    override val posts: StateFlow<List<Post>> = _posts
 
-    suspend fun fetchAllPosts(): Result<String> {
+    override suspend fun fetchAllPosts(): Result<String> {
         return try {
             val querySnapshot = firestore.collection("posts")
                 .orderBy("timestamp", Query.Direction.DESCENDING).get().await()
@@ -34,7 +42,7 @@ class PostsRemoteDataSource @Inject constructor(private val firestore: FirebaseF
         }
     }
 
-    suspend fun addOrUpdatePost(post: Post): Result<String> {
+    override suspend fun addOrUpdatePost(post: Post): Result<String> {
         return try {
             Log.d(TAG, "Attempt to set post with ID ${post.id} to firestore")
             firestore.collection("posts").document(post.id).set(post).await()
@@ -48,7 +56,7 @@ class PostsRemoteDataSource @Inject constructor(private val firestore: FirebaseF
         }
     }
 
-    suspend fun deletePost(postId: String): Result<String> {
+    override suspend fun deletePost(postId: String): Result<String> {
         return try {
             Log.d(TAG, "Attempt to delete post with ID $postId from firestore")
             firestore.collection("posts").document(postId).delete().await()

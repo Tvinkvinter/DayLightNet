@@ -10,17 +10,32 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface PostCardsRepository {
+    val posts: StateFlow<List<Post>>
+    val postCards: StateFlow<List<PostCard>>
+
+    suspend fun getPostCards(): Result<String>
+
+    suspend fun likeOrUnlikePostCard(
+        postCard: PostCard,
+        actionLike: Boolean,
+        onLocalChangesPerformed: () -> Unit
+    ): Result<String>
+
+    fun updatePostCardLocally(updatedPostCard: PostCard)
+}
+
 @Singleton
-class PostCardsRepository @Inject constructor(
+class PostCardsRepositoryImpl @Inject constructor(
     private val postsRepository: PostsRepository,
     private val usersRepository: UsersRepository
-) {
-    val posts: StateFlow<List<Post>> = postsRepository.posts
+): PostCardsRepository {
+    override val posts: StateFlow<List<Post>> = postsRepository.posts
 
     private val _postCards = MutableStateFlow<List<PostCard>>(emptyList())
-    val postCards: StateFlow<List<PostCard>> = _postCards
+    override val postCards: StateFlow<List<PostCard>> = _postCards
 
-    suspend fun getPostCards(): Result<String> {
+    override suspend fun getPostCards(): Result<String> {
         withContext(Dispatchers.IO) {
             postsRepository.fetchAllPosts()
         }
@@ -44,7 +59,7 @@ class PostCardsRepository @Inject constructor(
         return Result.success("${postCards.value.size} Post cards are created")
     }
 
-    suspend fun likeOrUnlikePostCard(
+    override suspend fun likeOrUnlikePostCard(
         postCard: PostCard,
         actionLike: Boolean,
         onLocalChangesPerformed: () -> Unit
@@ -80,7 +95,7 @@ class PostCardsRepository @Inject constructor(
         }
     }
 
-    fun updatePostCardLocally(updatedPostCard: PostCard) {
+    override fun updatePostCardLocally(updatedPostCard: PostCard) {
         val postCardToUpdate = postCards.value.find { it.post.id == updatedPostCard.post.id }
         val indexOfPostCardToUpdate = postCards.value.indexOf(postCardToUpdate)
         val updatedPostCards = postCards.value.toMutableList()

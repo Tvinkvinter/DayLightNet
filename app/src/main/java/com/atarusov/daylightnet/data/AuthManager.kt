@@ -6,14 +6,23 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface AuthManager {
+    val firebaseAuth: FirebaseAuth
+    val userSessionManager: UserSessionManager
+    suspend fun logInUser(email: String, password: String): Result<String>
+    suspend fun registerUser(email: String, password: String): Result<String>
+    suspend fun deleteCurrentUser(): Result<String>
+}
+
+
 @Singleton
-class AuthManager @Inject constructor(
-    private val firebaseAuth: FirebaseAuth,
-    private val userSessionManager: UserSessionManager
-) {
+class AuthManagerImpl @Inject constructor(
+    override val firebaseAuth: FirebaseAuth,
+    override val userSessionManager: UserSessionManager
+): AuthManager {
     val TAG = AuthManager::class.java.simpleName
 
-    suspend fun logInUser(email: String, password: String): Result<String> {
+    override suspend fun logInUser(email: String, password: String): Result<String> {
         return try {
             Log.d(TAG, "Attempt to sign in with email: $email")
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
@@ -29,7 +38,7 @@ class AuthManager @Inject constructor(
         }
     }
 
-    suspend fun registerUser(email: String, password: String): Result<String> {
+    override suspend fun registerUser(email: String, password: String): Result<String> {
         return try {
             Log.d(TAG, "Attempt to create new user with email: $email")
             firebaseAuth.createUserWithEmailAndPassword(email, password).await()
@@ -44,7 +53,7 @@ class AuthManager @Inject constructor(
         }
     }
 
-    suspend fun deleteCurrentUser(): Result<String> {
+    override suspend fun deleteCurrentUser(): Result<String> {
         return try {
             Log.d(TAG, "Attempt to delete current user account")
             firebaseAuth.currentUser?.delete()?.await()

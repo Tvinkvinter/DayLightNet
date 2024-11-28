@@ -6,32 +6,44 @@ import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface UsersRepository {
+    val currentUserId: StateFlow<String?>
+    suspend fun getUserDataOrNullById(userId: String): User?
+    suspend fun getCurrentUserDataOrNull(): User?
+    suspend fun addUserData(user: User): Result<String>
+    suspend fun updateUserData(user: User): Result<String>
+    suspend fun deleteCurrentUserAccountAndData(): Result<String>
+    suspend fun registerUser(registrationData: User.RegistrationData): Result<String>
+    suspend fun logInUser(loginData: User.LoginData): Result<String>
+    suspend fun logOutCurrentUser(): Result<String>
+}
+
 @Singleton
-class UsersRepository @Inject constructor(
+class UsersRepositoryImpl @Inject constructor(
     private val usersRemoteDataSource: UsersRemoteDataSource,
     private val userSessionManager: UserSessionManager,
     private val authManager: AuthManager
-) {
-    val currentUserId: StateFlow<String?> = userSessionManager.current_user_id
+): UsersRepository {
+    override val currentUserId: StateFlow<String?> = userSessionManager.current_user_id
 
-    suspend fun getUserDataOrNullById(userId: String): User? {
+    override suspend fun getUserDataOrNullById(userId: String): User? {
         usersRemoteDataSource.getUserDataOrNullById(userId)
         return usersRemoteDataSource.getUserDataOrNullById(userId)
     }
 
-    suspend fun getCurrentUserDataOrNull(): User? {
+    override suspend fun getCurrentUserDataOrNull(): User? {
         return currentUserId.value?.let { usersRemoteDataSource.getUserDataOrNullById(it) }
     }
 
-    suspend fun addUserData(user: User): Result<String> {
+    override suspend fun addUserData(user: User): Result<String> {
         return usersRemoteDataSource.addOrUpdateUser(user)
     }
 
-    suspend fun updateUserData(user: User): Result<String> {
+    override suspend fun updateUserData(user: User): Result<String> {
         return usersRemoteDataSource.addOrUpdateUser(user)
     }
 
-    suspend fun deleteCurrentUserAccountAndData(): Result<String> {
+    override suspend fun deleteCurrentUserAccountAndData(): Result<String> {
         val delete_account_result = authManager.deleteCurrentUser()
         if (delete_account_result.isSuccess)
             if (userSessionManager.isUserLoggedIn()) {
@@ -44,7 +56,7 @@ class UsersRepository @Inject constructor(
         return delete_account_result
     }
 
-    suspend fun registerUser(registrationData: User.RegistrationData): Result<String> {
+    override suspend fun registerUser(registrationData: User.RegistrationData): Result<String> {
         with(registrationData) {
             val auth_result = authManager.registerUser(email, password)
             var add_data_result = Result.failure<String>(
@@ -64,11 +76,11 @@ class UsersRepository @Inject constructor(
         }
     }
 
-    suspend fun logInUser(loginData: User.LoginData): Result<String> {
+    override suspend fun logInUser(loginData: User.LoginData): Result<String> {
         return authManager.logInUser(loginData.email, loginData.password)
     }
 
-    suspend fun logOutCurrentUser(): Result<String> {
+    override suspend fun logOutCurrentUser(): Result<String> {
         return userSessionManager.logOut()
     }
 

@@ -7,14 +7,20 @@ import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface UserSessionManager {
+    val current_user_id: StateFlow<String?>
+    fun logOut(): Result<String>
+    fun isUserLoggedIn(): Boolean
+}
+
 @Singleton
-class UserSessionManager @Inject constructor(
+class UserSessionManagerImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth
-) {
+): UserSessionManager {
     val TAG = AuthManager::class.java.simpleName
 
     private val _current_user_id = MutableStateFlow<String?>(null)
-    val current_user_id: StateFlow<String?> = _current_user_id
+    override val current_user_id: StateFlow<String?> = _current_user_id
 
     init {
         firebaseAuth.addAuthStateListener {
@@ -23,7 +29,7 @@ class UserSessionManager @Inject constructor(
         }
     }
 
-    fun logOut(): Result<String> {
+    override fun logOut(): Result<String> {
         return try {
             firebaseAuth.signOut()
             Result.success("User successfully signed out").also {
@@ -34,7 +40,7 @@ class UserSessionManager @Inject constructor(
         }
     }
 
-    fun isUserLoggedIn(): Boolean {
+    override fun isUserLoggedIn(): Boolean {
         return _current_user_id.value != null
     }
 }
